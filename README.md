@@ -82,7 +82,7 @@ cards:
   - type: entities
     entities:
       - entity: number.ferroamp_operation_settings_ace_threshold
-        name: Current Threshold
+        name: Current Threshold (A)
       - entity: switch.ferroamp_operation_settings_ace
         name: ACE
     title: ACE
@@ -207,6 +207,14 @@ cards:
       - entity: number.ferroamp_operation_settings_upper_reference
         name: Upper Reference (%)
     title: Battery State-of-Charge (SOC)
+    show_header_toggle: false
+  - type: entities
+    entities:
+      - entity: button.ferroamp_operation_settings_get_data
+        name: Get Data
+      - entity: button.ferroamp_operation_settings_update
+        name: Update
+    title: Control
     show_header_toggle: false
 ```
 
