@@ -12,7 +12,9 @@ ISSUE_URL = "https://github.com/jonasbkarlsson/ferroamp_operation_settings/issue
 # Icons
 ICON = "mdi:flash"
 ICON_SOLAR_POWER = "mdi:solar-power"
+ICON_BATTERY_80 = "mdi:battery-80"
 ICON_BATTERY_50 = "mdi:battery-50"
+ICON_BATTERY_20 = "mdi:battery-20"
 ICON_DOWNLOAD = "mdi:download"
 ICON_UPDATE = "mdi:update"
 
