@@ -21,13 +21,10 @@ The Ferroamp Operation Settings integration
 ## Installation
 
 ### HACS
-1. In Home Assistant go to HACS -> Integrations. Click on "+ Explore & Download Repositories" and search for "Ferroamp Operation Settings".
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=jonasbkarlsson&repository=ferroamp_operation_settings&category=integration)
-
-2. In Home Assistant go to Settings -> Devices & Services -> Integrations. Click on "+ Add integration" and search for "Ferroamp Operation Settings".
-
-[![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=ferroamp_operation_settings)
+1. In Home Assistant go to HACS -> Integrations. Click on the three dots in the upper-right corner and select "Custom repositories". Paste the URL [ferroamp_operation_settings](https://github.com/jonasbkarlsson/ferroamp_operation_settings) into the Repository field. In Category select Integration. Click on ADD.
+2. In Home Assistant go to HACS -> Integrations. Click on "+ Explore & Download Repositories" and search for "Ferroamp Operation Settings".
+3. In Home Assistant go to Settings -> Devices & Services -> Integrations. Click on "+ Add integration" and search for "Ferroamp Operation Settings".
 
 ### Manual
 
