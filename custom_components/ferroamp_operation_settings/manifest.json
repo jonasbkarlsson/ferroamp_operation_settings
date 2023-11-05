@@ -1,0 +1,14 @@
+{
+  "domain": "ferroamp_operation_settings",
+  "name": "Ferroamp Operation Settings",
+  "codeowners": [
+    "@jonasbkarlsson"
+  ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/jonasbkarlsson/ferroamp_operation_settings/",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/jonasbkarlsson/ferroamp_operation_settings/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

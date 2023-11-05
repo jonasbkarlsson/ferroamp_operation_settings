@@ -1,0 +1,16 @@
+{
+    "python.defaultInterpreterPath": "/usr/bin/python",
+    "files.associations": {
+        "*.yaml": "home-assistant"
+    },
+    "python.testing.cwd": "/workspaces/ferroamp_operation_settings/tests",
+    "python.testing.pytestArgs": [
+        "--cov-report=html:cov_html",
+        "--cov=custom_components.ferroamp_operation_settings"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.analysis.extraPaths": [
+        "/home/vscode/.local/lib/python3.10/site-packages/homeassistant"
+    ]
+}

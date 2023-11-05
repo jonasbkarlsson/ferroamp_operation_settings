@@ -1,0 +1,18 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "description": "Configuration of name and login information.",
+                "data": {
+                    "device_name": "Name",
+                    "system_id": "System ID",
+                    "login_email": "Login email",
+                    "login_password": "Password"
+                }
+            }
+        },
+        "error": {
+            "login_failed": "Login failed."
+        }
+    }
+}

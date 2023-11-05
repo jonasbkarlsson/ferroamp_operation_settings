@@ -1,0 +1,7 @@
+{
+    "name": "Ferroamp Operation Settings",
+    "homeassistant": "2022.7.0",
+    "zip_release": true,
+    "filename": "ferroamp_operation_settings.zip",
+    "render_readme": true
+}
