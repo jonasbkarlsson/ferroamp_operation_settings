@@ -8,7 +8,7 @@
 [![Project Maintenance][maintenance-shield]][user_profile]
 [![BuyMeCoffee][buymecoffeebadge]][buymecoffee]
 
-![Icon](assets/icon.png)
+![Icon](assets/logo.png)
 
 The Ferroamp Operation Settings integration
 
@@ -63,6 +63,152 @@ TBD | TBD | TBD
 
 ## Lovelace UI
 
+![Chart](assets/ferroamp_operation_settings_lovelace.png)
+```
+type: vertical-stack
+cards:
+  - type: entities
+    entities:
+      - entity: select.ferroamp_operation_settings_mode
+        name: Operation Mode
+    title: Operation Mode
+    show_header_toggle: false
+  - type: entities
+    entities:
+      - entity: switch.ferroamp_operation_settings_pv
+        name: PV
+    title: PV
+    show_header_toggle: false
+  - type: entities
+    entities:
+      - entity: number.ferroamp_operation_settings_ace_threshold
+        name: Current Threshold
+      - entity: switch.ferroamp_operation_settings_ace
+        name: ACE
+    title: ACE
+    show_header_toggle: false
+  - type: conditional
+    conditions:
+      - entity: select.ferroamp_operation_settings_mode
+        state: Self Consumption
+    card:
+      type: entities
+      entities:
+        - entity: switch.ferroamp_operation_settings_limit_import
+          name: Limit Import
+        - entity: switch.ferroamp_operation_settings_limit_export
+          name: Limit Export
+        - entity: number.ferroamp_operation_settings_import_threshold
+          name: Import Threshold (W)
+        - entity: number.ferroamp_operation_settings_export_threshold
+          name: Export Threshold (W)
+      title: Grid Power
+      show_header_toggle: false
+  - type: conditional
+    conditions:
+      - entity: select.ferroamp_operation_settings_mode
+        state: Default
+    card:
+      type: entities
+      entities:
+        - entity: switch.ferroamp_operation_settings_limit_import
+          name: Limit Import
+        - entity: switch.ferroamp_operation_settings_limit_export
+          name: Limit Export
+        - entity: number.ferroamp_operation_settings_import_threshold
+          name: Import Threshold (W)
+        - entity: number.ferroamp_operation_settings_export_threshold
+          name: Export Threshold (W)
+      title: Grid Power
+      show_header_toggle: false
+  - type: conditional
+    conditions:
+      - entity: select.ferroamp_operation_settings_mode
+        state: Peak Shaving
+    card:
+      type: entities
+      entities:
+        - entity: switch.ferroamp_operation_settings_limit_import
+          name: Limit Import
+        - entity: switch.ferroamp_operation_settings_limit_export
+          name: Limit Export
+        - entity: number.ferroamp_operation_settings_discharge_threshold
+          name: Discharge Threshold (W)
+        - entity: number.ferroamp_operation_settings_charge_threshold
+          name: Charge Threshold (W)
+      title: Grid Power
+      show_header_toggle: false
+  - type: vertical-stack
+    cards:
+      - type: conditional
+        conditions:
+          - entity: select.ferroamp_operation_settings_mode
+            state: Default
+        card:
+          type: entities
+          entities:
+            - entity: select.ferroamp_operation_settings_battery_power_mode
+              name: Battery Power Mode
+          title: Battery Power
+      - type: conditional
+        conditions:
+          - entity: select.ferroamp_operation_settings_battery_power_mode
+            state: Charge
+          - entity: select.ferroamp_operation_settings_mode
+            state: Default
+        card:
+          type: entities
+          entities:
+            - entity: number.ferroamp_operation_settings_charge_reference
+              name: Charge Reference (W)
+          show_header_toggle: false
+      - type: conditional
+        conditions:
+          - entity: select.ferroamp_operation_settings_battery_power_mode
+            state: Discharge
+          - entity: select.ferroamp_operation_settings_mode
+            state: Default
+        card:
+          type: entities
+          entities:
+            - entity: number.ferroamp_operation_settings_discharge_reference
+              name: Discharge Reference (W)
+          show_header_toggle: false
+  - type: conditional
+    conditions:
+      - entity: select.ferroamp_operation_settings_mode
+        state: Peak Shaving
+    card:
+      type: entities
+      entities:
+        - entity: number.ferroamp_operation_settings_discharge_reference
+          name: Discharge Reference (W)
+        - entity: number.ferroamp_operation_settings_charge_reference
+          name: Charge Reference (W)
+      title: Battery Power
+      show_header_toggle: false
+  - type: conditional
+    conditions:
+      - entity: select.ferroamp_operation_settings_mode
+        state: Self Consumption
+    card:
+      type: entities
+      entities:
+        - entity: number.ferroamp_operation_settings_discharge_reference
+          name: Discharge Reference (W)
+        - entity: number.ferroamp_operation_settings_charge_reference
+          name: Charge Reference (W)
+      title: Battery Power
+      show_header_toggle: false
+  - type: entities
+    entities:
+      - entity: number.ferroamp_operation_settings_lower_reference
+        name: Lower Reference (%)
+      - entity: number.ferroamp_operation_settings_upper_reference
+        name: Upper Reference (%)
+    title: Battery State-of-Charge (SOC)
+    show_header_toggle: false
+```
 
 ### Example of automation to TBD
 ```
