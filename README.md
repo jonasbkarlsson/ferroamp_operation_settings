@@ -82,7 +82,6 @@ Charge Reference | Number | Constant power reference for the battery, as long as
 
 Entity | Type | Descriptions, valid value ranges.
 -- | -- | --
-Entity | Type | Descriptions, valid value ranges.
 Limit Import | Switch | If enabled, the system is not allowed to import power from the grid, above the Discharge Threshold.
 Limit Export | Switch | If enabled, the system is not allowed to export power to the grid, below the Charge Threshold.
 Discharge Threshold | Number | Threshold on grid power, correspondning to consumption peaks, above which battery may be discharged to compensate for loads. Unit "W".
