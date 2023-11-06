@@ -91,7 +91,9 @@ Discharge Reference | Number | Maximum battery power, up to which battery may be
 Charge Reference | Number | Maximum battery power, up to which battery may be charged from grid, if grid power is below the Charge Threshold.
 
 ### Entities used by Operation Mode Self Consumption
+
 Entity | Type | Descriptions, valid value ranges.
+-- | -- | --
 Limit Import | Switch | If enabled, the system is not allowed to import power from the grid, above the Import Threshold.
 Limit Export | Switch | If enabled, the system is not allowed to export power to the grid, below the Export Threshold.
 Import Threshold | Number | Threshold on grid power, above which, self-consumption of PV power is prioritized. Batteries may be discharged to compensate for loads.
