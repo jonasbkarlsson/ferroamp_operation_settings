@@ -53,7 +53,7 @@ With the exception of Name, the above configuration items can be changed after i
 
 Entities can be set using relevant service calls, `button.press`, `number.set_value`, `select.select_option` and `switch.turn_on`/`switch.turn_off`.
 
-### Common entities for all Operation Modes
+### Entities common for all Operation Modes
 
 Entity | Type | Descriptions, valid value ranges.
 -- | -- | --
@@ -67,6 +67,7 @@ Get Data | Button | Reads the current configuration from the Ferroamp system and
 Update | Button | Writes the values of all entities to the Ferroamp system.
 
 ### Entities used by Operation Mode Default
+
 Entity | Type | Descriptions, valid value ranges.
 -- | -- | --
 Limit Import | Switch | If enabled, the system is not allowed to import power from the grid, above the Import Threshold.
@@ -78,6 +79,9 @@ Discharge Reference | Number | Constant power reference for the battery, as long
 Charge Reference | Number | Constant power reference for the battery, as long as the SoC is within the upper and lower limits.
 
 ### Entities used by Operation Mode Peak Shaving
+
+Entity | Type | Descriptions, valid value ranges.
+-- | -- | --
 Entity | Type | Descriptions, valid value ranges.
 Limit Import | Switch | If enabled, the system is not allowed to import power from the grid, above the Discharge Threshold.
 Limit Export | Switch | If enabled, the system is not allowed to export power to the grid, below the Charge Threshold.
