@@ -95,6 +95,7 @@ class FerroampOperationSettingsNumberACEThreshold(FerroampOperationSettingsNumbe
     def __init__(self, entry, coordinator: FerroampOperationSettingsCoordinator):
         _LOGGER.debug("FerroampOperationSettingsNumberACEThreshold.__init__()")
         super().__init__(entry, coordinator)
+        self.coordinator.number_ace_threshold = self
         if self.value is None:
             self._attr_native_value = 16
             self.update_ha_state()
@@ -102,7 +103,6 @@ class FerroampOperationSettingsNumberACEThreshold(FerroampOperationSettingsNumbe
     async def async_set_native_value(self, value: float) -> None:
         """Set new value."""
         await super().async_set_native_value(value)
-        self.coordinator.number_ace_threshold = value
 
 
 class FerroampOperationSettingsNumberDischargeThreshold(
@@ -120,6 +120,7 @@ class FerroampOperationSettingsNumberDischargeThreshold(
     def __init__(self, entry, coordinator: FerroampOperationSettingsCoordinator):
         _LOGGER.debug("FerroampOperationSettingsNumberDischargeThreshold.__init__()")
         super().__init__(entry, coordinator)
+        self.coordinator.number_discharge_threshold = self
         if self.value is None:
             self._attr_native_value = 0
             self.update_ha_state()
@@ -127,7 +128,6 @@ class FerroampOperationSettingsNumberDischargeThreshold(
     async def async_set_native_value(self, value: float) -> None:
         """Set new value."""
         await super().async_set_native_value(value)
-        self.coordinator.number_discharge_threshold = value
 
 
 class FerroampOperationSettingsNumberChargeThreshold(FerroampOperationSettingsNumber):
@@ -143,6 +143,7 @@ class FerroampOperationSettingsNumberChargeThreshold(FerroampOperationSettingsNu
     def __init__(self, entry, coordinator: FerroampOperationSettingsCoordinator):
         _LOGGER.debug("FerroampOperationSettingsNumberChargeThreshold.__init__()")
         super().__init__(entry, coordinator)
+        self.coordinator.number_charge_threshold = self
         if self.value is None:
             self._attr_native_value = 0
             self.update_ha_state()
@@ -150,7 +151,6 @@ class FerroampOperationSettingsNumberChargeThreshold(FerroampOperationSettingsNu
     async def async_set_native_value(self, value: float) -> None:
         """Set new value."""
         await super().async_set_native_value(value)
-        self.coordinator.number_charge_threshold = value
 
 
 class FerroampOperationSettingsNumberImportThreshold(FerroampOperationSettingsNumber):
@@ -166,6 +166,7 @@ class FerroampOperationSettingsNumberImportThreshold(FerroampOperationSettingsNu
     def __init__(self, entry, coordinator: FerroampOperationSettingsCoordinator):
         _LOGGER.debug("FerroampOperationSettingsNumberImportThreshold.__init__()")
         super().__init__(entry, coordinator)
+        self.coordinator.number_import_threshold = self
         if self.value is None:
             self._attr_native_value = 0
             self.update_ha_state()
@@ -173,7 +174,6 @@ class FerroampOperationSettingsNumberImportThreshold(FerroampOperationSettingsNu
     async def async_set_native_value(self, value: float) -> None:
         """Set new value."""
         await super().async_set_native_value(value)
-        self.coordinator.number_import_threshold = value
 
 
 class FerroampOperationSettingsNumberExportThreshold(FerroampOperationSettingsNumber):
@@ -189,6 +189,7 @@ class FerroampOperationSettingsNumberExportThreshold(FerroampOperationSettingsNu
     def __init__(self, entry, coordinator: FerroampOperationSettingsCoordinator):
         _LOGGER.debug("FerroampOperationSettingsNumberExportThreshold.__init__()")
         super().__init__(entry, coordinator)
+        self.coordinator.number_export_threshold = self
         if self.value is None:
             self._attr_native_value = 0
             self.update_ha_state()
@@ -196,7 +197,6 @@ class FerroampOperationSettingsNumberExportThreshold(FerroampOperationSettingsNu
     async def async_set_native_value(self, value: float) -> None:
         """Set new value."""
         await super().async_set_native_value(value)
-        self.coordinator.number_export_threshold = value
 
 
 class FerroampOperationSettingsNumberDischargeReference(
@@ -214,6 +214,7 @@ class FerroampOperationSettingsNumberDischargeReference(
     def __init__(self, entry, coordinator: FerroampOperationSettingsCoordinator):
         _LOGGER.debug("FerroampOperationSettingsNumberDischargeReference.__init__()")
         super().__init__(entry, coordinator)
+        self.coordinator.number_discharge_reference = self
         if self.value is None:
             self._attr_native_value = 0
             self.update_ha_state()
@@ -221,7 +222,6 @@ class FerroampOperationSettingsNumberDischargeReference(
     async def async_set_native_value(self, value: float) -> None:
         """Set new value."""
         await super().async_set_native_value(value)
-        self.coordinator.number_discharge_reference = value
 
 
 class FerroampOperationSettingsNumberChargeReference(FerroampOperationSettingsNumber):
@@ -237,6 +237,7 @@ class FerroampOperationSettingsNumberChargeReference(FerroampOperationSettingsNu
     def __init__(self, entry, coordinator: FerroampOperationSettingsCoordinator):
         _LOGGER.debug("FerroampOperationSettingsNumberChargeReference.__init__()")
         super().__init__(entry, coordinator)
+        self.coordinator.number_charge_reference = self
         if self.value is None:
             self._attr_native_value = 0
             self.update_ha_state()
@@ -244,7 +245,6 @@ class FerroampOperationSettingsNumberChargeReference(FerroampOperationSettingsNu
     async def async_set_native_value(self, value: float) -> None:
         """Set new value."""
         await super().async_set_native_value(value)
-        self.coordinator.number_charge_reference = value
 
 
 class FerroampOperationSettingsNumberLowerReference(FerroampOperationSettingsNumber):
@@ -261,6 +261,7 @@ class FerroampOperationSettingsNumberLowerReference(FerroampOperationSettingsNum
     def __init__(self, entry, coordinator: FerroampOperationSettingsCoordinator):
         _LOGGER.debug("FerroampOperationSettingsNumberLowerReference.__init__()")
         super().__init__(entry, coordinator)
+        self.coordinator.number_lower_reference = self
         if self.value is None:
             self._attr_native_value = 0
             self.update_ha_state()
@@ -268,7 +269,6 @@ class FerroampOperationSettingsNumberLowerReference(FerroampOperationSettingsNum
     async def async_set_native_value(self, value: float) -> None:
         """Set new value."""
         await super().async_set_native_value(value)
-        self.coordinator.number_lower_reference = value
 
 
 class FerroampOperationSettingsNumberUpperReference(FerroampOperationSettingsNumber):
@@ -285,6 +285,7 @@ class FerroampOperationSettingsNumberUpperReference(FerroampOperationSettingsNum
     def __init__(self, entry, coordinator: FerroampOperationSettingsCoordinator):
         _LOGGER.debug("FerroampOperationSettingsNumberUpperReference.__init__()")
         super().__init__(entry, coordinator)
+        self.coordinator.number_upper_reference = self
         if self.value is None:
             self._attr_native_value = 0
             self.update_ha_state()
@@ -292,4 +293,3 @@ class FerroampOperationSettingsNumberUpperReference(FerroampOperationSettingsNum
     async def async_set_native_value(self, value: float) -> None:
         """Set new value."""
         await super().async_set_native_value(value)
-        self.coordinator.number_upper_reference = value

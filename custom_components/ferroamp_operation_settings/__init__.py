@@ -5,6 +5,7 @@ import logging
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.device_registry import async_get as async_device_registry_get
 from homeassistant.helpers.device_registry import DeviceRegistry, DeviceEntry
 from homeassistant.helpers.entity_registry import async_get as async_entity_registry_get
@@ -13,8 +14,14 @@ from homeassistant.helpers.entity_registry import (
     async_entries_for_config_entry,
 )
 
+from custom_components.ferroamp_operation_settings.helpers.api import FerroamoApiClient
+from custom_components.ferroamp_operation_settings.helpers.general import get_parameter
+
 from .coordinator import FerroampOperationSettingsCoordinator
 from .const import (
+    CONF_LOGIN_EMAIL,
+    CONF_LOGIN_PASSWORD,
+    CONF_SYSTEM_ID,
     DOMAIN,
     STARTUP_MESSAGE,
     PLATFORMS,
@@ -30,7 +37,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         hass.data.setdefault(DOMAIN, {})
         _LOGGER.debug(STARTUP_MESSAGE)
 
-    coordinator = FerroampOperationSettingsCoordinator(hass, entry)
+    session = async_get_clientsession(hass)
+    system_id = get_parameter(entry, CONF_SYSTEM_ID)
+    email = get_parameter(entry, CONF_LOGIN_EMAIL)
+    password = get_parameter(entry, CONF_LOGIN_PASSWORD)
+    client = FerroamoApiClient(system_id, email, password, session)
+    coordinator = FerroampOperationSettingsCoordinator(hass, entry, client)
+    await coordinator.async_config_entry_first_refresh()
     hass.data[DOMAIN][entry.entry_id] = coordinator
 
     for platform in PLATFORMS:

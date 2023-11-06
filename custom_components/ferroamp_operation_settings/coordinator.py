@@ -1,6 +1,7 @@
 """Coordinator for Ferroamp Operation Settings"""
 
 import logging
+from homeassistant.components.number import NumberEntity
 from homeassistant.config_entries import (
     ConfigEntry,
 )
@@ -13,30 +14,39 @@ from homeassistant.helpers.entity_registry import (
     EntityRegistry,
     async_entries_for_config_entry,
 )
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+
+
+from custom_components.ferroamp_operation_settings.const import DOMAIN
+
+from custom_components.ferroamp_operation_settings.helpers.api import ApiClientBase
 
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class FerroampOperationSettingsCoordinator:
+class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
     """Coordinator class"""
 
-    def __init__(self, hass: HomeAssistant, config_entry: ConfigEntry) -> None:
+    def __init__(
+        self, hass: HomeAssistant, config_entry: ConfigEntry, client: ApiClientBase
+    ) -> None:
         """Initialize."""
         self.hass = hass
         self.config_entry = config_entry
+        self.api = client
         self.listeners = []
         self.platforms = []
 
-        self.number_ace_threshold = None
-        self.number_discharge_threshold = None
-        self.number_charge_threshold = None
-        self.number_import_threshold = None
-        self.number_export_threshold = None
-        self.number_discharge_reference = None
-        self.number_charge_reference = None
-        self.number_lower_reference = None
-        self.number_upper_reference = None
+        self.number_ace_threshold: NumberEntity = None
+        self.number_discharge_threshold: NumberEntity = None
+        self.number_charge_threshold: NumberEntity = None
+        self.number_import_threshold: NumberEntity = None
+        self.number_export_threshold: NumberEntity = None
+        self.number_discharge_reference: NumberEntity = None
+        self.number_charge_reference: NumberEntity = None
+        self.number_lower_reference: NumberEntity = None
+        self.number_upper_reference: NumberEntity = None
 
         self.switch_pv = None
         self.switch_ace = None
@@ -47,6 +57,16 @@ class FerroampOperationSettingsCoordinator:
         self.listeners.append(
             hass.bus.async_listen(EVENT_DEVICE_REGISTRY_UPDATED, self.device_updated)
         )
+
+        # Do not pull with regular intervals
+        super().__init__(hass, _LOGGER, name=DOMAIN)
+
+    async def _async_update_data(self):
+        """Update data via library."""
+        try:
+            return await self.api.async_get_data()
+        except Exception as exception:
+            raise UpdateFailed() from exception
 
     def unsubscribe_listeners(self):
         """Unsubscribed to listeners"""
@@ -96,6 +116,46 @@ class FerroampOperationSettingsCoordinator:
         """Handle the Limit Export switch"""
         self.switch_limit_export = state
         _LOGGER.debug("switch_limit_export_update = %s", state)
+
+    async def get_data(self):
+        """Get configuration from Ferroamp system and updated entities"""
+        await self.async_refresh()
+        if self.last_update_success:
+            await self.number_ace_threshold.async_set_native_value(
+                self.data["emsConfig"]["data"]["grid"]["ace"]["threshold"]
+            )
+            await self.number_discharge_threshold.async_set_native_value(
+                self.data["emsConfig"]["data"]["grid"]["thresholds"][
+                    "high"
+                ]  # Conditionally set
+            )
+            await self.number_charge_threshold.async_set_native_value(
+                self.data["emsConfig"]["data"]["grid"]["thresholds"][
+                    "low"
+                ]  # Conditionally set
+            )
+            await self.number_import_threshold.async_set_native_value(
+                self.data["emsConfig"]["data"]["grid"]["thresholds"][
+                    "high"
+                ]  # Conditionally set
+            )
+            await self.number_export_threshold.async_set_native_value(
+                self.data["emsConfig"]["data"]["grid"]["thresholds"][
+                    "low"
+                ]  # Conditionally set
+            )
+            await self.number_discharge_reference.async_set_native_value(
+                self.data["emsConfig"]["data"]["battery"]["powerRef"]["discharge"]
+            )
+            await self.number_charge_reference.async_set_native_value(
+                self.data["emsConfig"]["data"]["battery"]["powerRef"]["charge"]
+            )
+            await self.number_lower_reference.async_set_native_value(
+                self.data["emsConfig"]["data"]["battery"]["socRef"]["low"]
+            )
+            await self.number_upper_reference.async_set_native_value(
+                self.data["emsConfig"]["data"]["battery"]["socRef"]["high"]
+            )
 
     def get_entity_id_from_unique_id(self, unique_id: str) -> str:
         """Get the Entity ID for the entity with the unique_id"""
