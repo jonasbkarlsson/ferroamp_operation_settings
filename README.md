@@ -72,8 +72,8 @@ Entity | Type | Descriptions, valid value ranges.
 -- | -- | --
 Limit Import | Switch | If enabled, the system is not allowed to import power from the grid, above the Import Threshold.
 Limit Export | Switch | If enabled, the system is not allowed to export power to the grid, below the Export Threshold.
-Import Threshold | Number | Threshold on grid power, above which the system is not allowed to import power from the grid. Unit "W".
-Export Threshold | Number | Threshold on grid power, below which the system is not allowed to export power to the grid. Unit "W".
+Import Threshold | Number | Threshold on grid power, above which the system is not allowed to import power from the grid. Valid values min=-100000.0, step=0.1, max=100000.0. Unit "W".
+Export Threshold | Number | Threshold on grid power, below which the system is not allowed to export power to the grid. Valid values min=-100000.0, step=0.1, max=100000.0. Unit "W".
 Battery Power Mode | Select | Select one the batter power modes `Off`, `Charge` or `Discharge`.
 Discharge Reference | Number | Constant power reference for the battery, as long as the SoC is within the upper and lower limits. Valid values min=0.0, step=0.1, max=100000.0. Unit "W".
 Charge Reference | Number | Constant power reference for the battery, as long as the SoC is within the upper and lower limits. Valid values min=0.0, step=0.1, max=100000.0. Unit "W".
@@ -84,8 +84,8 @@ Entity | Type | Descriptions, valid value ranges.
 -- | -- | --
 Limit Import | Switch | If enabled, the system is not allowed to import power from the grid, above the Discharge Threshold.
 Limit Export | Switch | If enabled, the system is not allowed to export power to the grid, below the Charge Threshold.
-Discharge Threshold | Number | Threshold on grid power, correspondning to consumption peaks, above which battery may be discharged to compensate for loads. Unit "W".
-Charge Threshold | Number | Threshold on grid power, corresponding to off-peak consumption, below which battery may be charged from the grid. Unit "W".
+Discharge Threshold | Number | Threshold on grid power, correspondning to consumption peaks, above which battery may be discharged to compensate for loads. Discharge Threshold should be larger than Charge Threshold! Valid values min=-100000.0, step=0.1, max=100000.0. Unit "W".
+Charge Threshold | Number | Threshold on grid power, corresponding to off-peak consumption, below which battery may be charged from the grid. Charge Threshold should be smaller than Discharge Threshold! Valid values min=-100000.0, step=0.1, max=100000.0. Unit "W".
 Discharge Reference | Number | Maximum battery power, up to which battery may be discharged into grid, if grid power is above the Discharge Threshold. Valid values min=0.0, step=0.1, max=100000.0. Unit "W".
 Charge Reference | Number | Maximum battery power, up to which battery may be charged from grid, if grid power is below the Charge Threshold. Valid values min=0.0, step=0.1, max=100000.0. Unit "W".
 
@@ -95,8 +95,8 @@ Entity | Type | Descriptions, valid value ranges.
 -- | -- | --
 Limit Import | Switch | If enabled, the system is not allowed to import power from the grid, above the Import Threshold.
 Limit Export | Switch | If enabled, the system is not allowed to export power to the grid, below the Export Threshold.
-Import Threshold | Number | Threshold on grid power, above which, self-consumption of PV power is prioritized. Batteries may be discharged to compensate for loads. Unit "W".
-Export Threshold | Number | Threshold on grid power, below which charging batteries from PV power is prioritized. Unit "W".
+Import Threshold | Number | Threshold on grid power, above which, self-consumption of PV power is prioritized. Batteries may be discharged to compensate for loads. Valid values min=-100000.0, step=0.1, max=100000.0. Unit "W".
+Export Threshold | Number | Threshold on grid power, below which charging batteries from PV power is prioritized. Valid values min=-100000.0, step=0.1, max=100000.0. Unit "W".
 Discharge Reference | Number | Maximum battery power, up to which battery may be discharged into grid, if grid power is above the Import Threshold. Valid values min=0.0, step=0.1, max=100000.0. Unit "W".
 Charge Reference | Number | Maximum battery power, up to which charging battery from PV power is prioritized, if grid power is below the Export Threshold. Valid values min=0.0, step=0.1, max=100000.0. Unit "W".
 

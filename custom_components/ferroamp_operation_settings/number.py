@@ -112,7 +112,7 @@ class FerroampOperationSettingsNumberDischargeThreshold(
 
     _attr_name = ENTITY_NAME_DISCHARGE_THRESHOLD_NUMBER
     _attr_entity_category = EntityCategory.CONFIG
-    _attr_native_min_value = 0
+    _attr_native_min_value = -100000.0
     _attr_native_max_value = 100000.0
     _attr_native_step = 0.1
     _attr_unit_of_measurement = "W"
@@ -135,7 +135,7 @@ class FerroampOperationSettingsNumberChargeThreshold(FerroampOperationSettingsNu
 
     _attr_name = ENTITY_NAME_CHARGE_THRESHOLD_NUMBER
     _attr_entity_category = EntityCategory.CONFIG
-    _attr_native_min_value = 0
+    _attr_native_min_value = -100000.0
     _attr_native_max_value = 100000.0
     _attr_native_step = 0.1
     _attr_unit_of_measurement = "W"
@@ -158,7 +158,7 @@ class FerroampOperationSettingsNumberImportThreshold(FerroampOperationSettingsNu
 
     _attr_name = ENTITY_NAME_IMPORT_THRESHOLD_NUMBER
     _attr_entity_category = EntityCategory.CONFIG
-    _attr_native_min_value = 0
+    _attr_native_min_value = -100000.0
     _attr_native_max_value = 100000.0
     _attr_native_step = 0.1
     _attr_unit_of_measurement = "W"
@@ -181,7 +181,7 @@ class FerroampOperationSettingsNumberExportThreshold(FerroampOperationSettingsNu
 
     _attr_name = ENTITY_NAME_EXPORT_THRESHOLD_NUMBER
     _attr_entity_category = EntityCategory.CONFIG
-    _attr_native_min_value = 0
+    _attr_native_min_value = -100000.0
     _attr_native_max_value = 100000.0
     _attr_native_step = 0.1
     _attr_unit_of_measurement = "W"
