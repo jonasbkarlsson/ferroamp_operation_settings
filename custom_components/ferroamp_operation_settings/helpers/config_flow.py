@@ -3,16 +3,18 @@
 import logging
 from typing import Any
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.device_registry import async_get as async_device_registry_get
 from homeassistant.helpers.device_registry import DeviceRegistry
-from homeassistant.helpers.entity_registry import async_get as async_entity_registry_get
-from homeassistant.helpers.entity_registry import (
-    EntityRegistry,
-)
+
+from custom_components.ferroamp_operation_settings.helpers.api import FerroamoApiClient
 
 
 # pylint: disable=relative-beyond-top-level
 from ..const import (
+    CONF_LOGIN_EMAIL,
+    CONF_LOGIN_PASSWORD,
+    CONF_SYSTEM_ID,
     DOMAIN,
     NAME,
 )
@@ -24,17 +26,23 @@ class FlowValidator:
     """Validator of flows"""
 
     @staticmethod
-    def validate_step_user(
+    async def validate_step_user(
         hass: HomeAssistant, user_input: dict[str, Any]
     ) -> list[str]:
         """Validate step_user"""
 
-        entity_registry: EntityRegistry = async_entity_registry_get(hass)
-        entities = entity_registry.entities
+        session = async_get_clientsession(hass)
+        client = FerroamoApiClient(
+            user_input[CONF_SYSTEM_ID],
+            user_input[CONF_LOGIN_EMAIL],
+            user_input[CONF_LOGIN_PASSWORD],
+            session,
+        )
 
         # Validate System ID, login email and password
-        #    _LOGGER.debug("Something is wrong")
-        #    return ("base", "login_failed")
+        if await client.async_get_data() is None:
+            _LOGGER.debug("Failed to get data!")
+            return ("base", "login_failed")
 
         return None
 
