@@ -3,6 +3,8 @@ import logging
 import voluptuous as vol
 
 from homeassistant import config_entries
+from homeassistant.core import callback
+from homeassistant.data_entry_flow import FlowResult
 import homeassistant.helpers.config_validation as cv
 
 from .const import (
@@ -13,6 +15,7 @@ from .const import (
     DOMAIN,
 )
 from .helpers.config_flow import DeviceNameCreator, FlowValidator
+from .helpers.general import get_parameter
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -27,6 +30,14 @@ class FerroampOperationSettingsConfigFlow(config_entries.ConfigFlow, domain=DOMA
         _LOGGER.debug("FerroampOperationSettingsConfigFlow.__init__")
         self._errors = {}
         self.user_input = {}
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(
+        config_entry: config_entries.ConfigEntry,
+    ) -> config_entries.OptionsFlow:
+        """Create the options flow."""
+        return OptionsFlowHandler(config_entry)
 
     async def async_step_user(self, user_input=None):
         _LOGGER.debug("FerroampOperationSettingsConfigFlow.async_step_user")
@@ -78,6 +89,53 @@ class FerroampOperationSettingsConfigFlow(config_entries.ConfigFlow, domain=DOMA
 
         return self.async_show_form(
             step_id="user",
+            data_schema=vol.Schema(user_schema),
+            errors=self._errors,
+            last_step=True,
+        )
+
+
+class OptionsFlowHandler(config_entries.OptionsFlow):
+    """Options flow handler"""
+
+    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+        """Initialize options flow."""
+        self.config_entry = config_entry
+        self._errors = {}
+
+    async def async_step_init(self, user_input) -> FlowResult:
+        """Manage the options."""
+
+        self._errors = {}
+
+        if user_input is not None:
+            # process user_input
+            error = FlowValidator.validate_step_user(self.hass, user_input)
+            if error is not None:
+                self._errors[error[0]] = error[1]
+
+            if not self._errors:
+                return self.async_create_entry(
+                    title=self.config_entry.title, data=user_input
+                )
+
+        user_schema = {
+            vol.Required(
+                CONF_SYSTEM_ID,
+                default=get_parameter(self.config_entry, CONF_SYSTEM_ID),
+            ): cv.positive_int,
+            vol.Required(
+                CONF_LOGIN_EMAIL,
+                default=get_parameter(self.config_entry, CONF_LOGIN_EMAIL),
+            ): cv.string,
+            vol.Required(
+                CONF_LOGIN_PASSWORD,
+                default=get_parameter(self.config_entry, CONF_LOGIN_PASSWORD),
+            ): cv.string,
+        }
+
+        return self.async_show_form(
+            step_id="init",
             data_schema=vol.Schema(user_schema),
             errors=self._errors,
             last_step=True,

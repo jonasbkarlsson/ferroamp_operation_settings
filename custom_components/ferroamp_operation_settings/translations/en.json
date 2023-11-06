@@ -14,5 +14,20 @@
         "error": {
             "login_failed": "Login failed."
         }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "description": "Configuration of login information.",
+                "data": {
+                    "system_id": "System ID",
+                    "login_email": "Login email",
+                    "login_password": "Password"
+                }
+            }
+        },
+        "error": {
+            "login_failed": "Login failed."
+        }
     }
 }
