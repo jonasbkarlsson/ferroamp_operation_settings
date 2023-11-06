@@ -48,7 +48,8 @@ class FerroampOperationSettingsButtonGetData(FerroampOperationSettingsButton):
 
     async def async_press(self) -> None:
         """Press the button."""
-        await self.coordinator.turn_on_charging()
+        # TODO: await self.coordinator.turn_on_charging()
+        pass
 
 
 class FerroampOperationSettingsButtonUpdate(FerroampOperationSettingsButton):
@@ -59,4 +60,5 @@ class FerroampOperationSettingsButtonUpdate(FerroampOperationSettingsButton):
 
     async def async_press(self) -> None:
         """Press the button."""
-        await self.coordinator.turn_off_charging()
+        # TODO: await self.coordinator.turn_off_charging()
+        pass
