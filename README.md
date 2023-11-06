@@ -61,8 +61,8 @@ Mode | Select |Selects one of the operation modes `Default`, `Peak Shaving` or `
 PV | Switch | Enables PV strings.
 ACE threshold | Number | Current threshold for the ACE function. Valid values min=0.0, step=0.1, max=100.0.
 ACE | Switch | Enable current equalization (ACE) when current in any Mains phase exceeds the ACE threshold.
-Lower Reference | Number | Battery state-of-charge (SoC), below which it is not allowed to discharge battery.
-Upper Reference | Number | Battery state-of-charge (SoC), above which it is not allowed to charge battery.
+Lower Reference | Number | Battery state-of-charge (SoC), below which it is not allowed to discharge battery. Valid values min=0.0, step=0.1, max=100.0.
+Upper Reference | Number | Battery state-of-charge (SoC), above which it is not allowed to charge battery. Valid values min=0.0, step=0.1, max=100.0.
 Get Data | Button | Reads the current configuration from the Ferroamp system and sets the values of all the entities.
 Update | Button | Writes the values of all entities to the Ferroamp system.
 
@@ -75,8 +75,8 @@ Limit Export | Switch | If enabled, the system is not allowed to export power to
 Import Threshold | Number | Threshold on grid power, above which the system is not allowed to import power from the grid.
 Export Threshold | Number | Threshold on grid power, below which the system is not allowed to export power to the grid.
 Battery Power Mode | Select | Select one the batter power modes `Off`, `Charge` or `Discharge`.
-Discharge Reference | Number | Constant power reference for the battery, as long as the SoC is within the upper and lower limits.
-Charge Reference | Number | Constant power reference for the battery, as long as the SoC is within the upper and lower limits.
+Discharge Reference | Number | Constant power reference for the battery, as long as the SoC is within the upper and lower limits. Valid values min=0.0, step=0.1, max=100000.0.
+Charge Reference | Number | Constant power reference for the battery, as long as the SoC is within the upper and lower limits. Valid values min=0.0, step=0.1, max=100000.0.
 
 ### Entities used by Operation Mode Peak Shaving
 
@@ -87,8 +87,8 @@ Limit Import | Switch | If enabled, the system is not allowed to import power fr
 Limit Export | Switch | If enabled, the system is not allowed to export power to the grid, below the Charge Threshold.
 Discharge Threshold | Number | Threshold on grid power, correspondning to consumption peaks, above which battery may be discharged to compensate for loads.
 Charge Threshold | Number | Threshold on grid power, corresponding to off-peak consumption, below which battery may be charged from the grid.
-Discharge Reference | Number | Maximum battery power, up to which battery may be discharged into grid, if grid power is above the Discharge Threshold.
-Charge Reference | Number | Maximum battery power, up to which battery may be charged from grid, if grid power is below the Charge Threshold.
+Discharge Reference | Number | Maximum battery power, up to which battery may be discharged into grid, if grid power is above the Discharge Threshold. Valid values min=0.0, step=0.1, max=100000.0.
+Charge Reference | Number | Maximum battery power, up to which battery may be charged from grid, if grid power is below the Charge Threshold. Valid values min=0.0, step=0.1, max=100000.0.
 
 ### Entities used by Operation Mode Self Consumption
 
@@ -98,8 +98,8 @@ Limit Import | Switch | If enabled, the system is not allowed to import power fr
 Limit Export | Switch | If enabled, the system is not allowed to export power to the grid, below the Export Threshold.
 Import Threshold | Number | Threshold on grid power, above which, self-consumption of PV power is prioritized. Batteries may be discharged to compensate for loads.
 Export Threshold | Number | Threshold on grid power, below which charging batteries from PV power is prioritized.
-Discharge Reference | Number | Maximum battery power, up to which battery may be discharged into grid, if grid power is above the Import Threshold.
-Charge Reference | Number | Maximum battery power, up to which charging battery from PV power is prioritized, if grid power is below the Export Threshold.
+Discharge Reference | Number | Maximum battery power, up to which battery may be discharged into grid, if grid power is above the Import Threshold. Valid values min=0.0, step=0.1, max=100000.0.
+Charge Reference | Number | Maximum battery power, up to which charging battery from PV power is prioritized, if grid power is below the Export Threshold. Valid values min=0.0, step=0.1, max=100000.0.
 
 
 ## Lovelace UI
