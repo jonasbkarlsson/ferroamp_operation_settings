@@ -57,7 +57,7 @@ class FerroampOperationSettingsConfigFlow(config_entries.ConfigFlow, domain=DOMA
 
         else:
             # process user_input
-            error = FlowValidator.validate_step_user(self.hass, user_input)
+            error = await FlowValidator.validate_step_user(self.hass, user_input)
             if error is not None:
                 self._errors[error[0]] = error[1]
 
@@ -110,7 +110,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         if user_input is not None:
             # process user_input
-            error = FlowValidator.validate_step_user(self.hass, user_input)
+            error = await FlowValidator.validate_step_user(self.hass, user_input)
             if error is not None:
                 self._errors[error[0]] = error[1]
 
