@@ -10,13 +10,13 @@
 
 ![Icon](assets/logo.png)
 
-The Ferroamp Operation Settings integration
+The Ferroamp Operation Settings integration implements the Operation Settings in the Ferroamp Portal. To control the Operation Settings from Home Assistant is an alternative to use the Scheduling function in the Ferroamp Portal.
 
 ## Requirements
 - Home Assistant version 2022.7 or newer.
 
 ## Features
-- TBD
+- Implements the Operation Settings in the Ferroamp Portal.
 
 ## Installation
 
@@ -42,21 +42,64 @@ The configuration is done in the Home Assistant user interface.
 
 Parameter | Required | Description
 -- | -- | --
-TBD | Yes | TBD
+Name | Yes | The device name.
+System ID | Yes | The Ferroamp system ID
+Login email | Yes | The email used to login to the Ferroamp Portal
+Password | Yes | The password used to login to the Ferroamp Portal
 
-With the exception of Name, the above configuration items can be changed after intial configuration in Settings -> Devices & Services -> Integrations -> Ferroamp Operation Settings -> 1 device -> Configure. To change Name, the native way to rename Integrations or Devices in Home Assistant can be used.
-
-### Configuration entities
-
-Entity | Type | Descriptions, valid value ranges and service calls
--- | -- | --
-TBD | TBD | TBD
+With the exception of Name, the above configuration items can be changed after intial configuration in Settings -> Devices & Services -> Integrations -> Ferroamp Operation Settings -> Configure. To change Name, the native way to rename Integrations or Devices in Home Assistant can be used.
 
 ## Entities
 
-Entity | Type | Description
+Entities can be set using relevant service calls, `button.press`, `number.set_value`, `select.select_option` and `switch.turn_on`/`switch.turn_off`.
+
+### Entities common for all Operation Modes
+
+Entity | Type | Descriptions, valid value ranges.
 -- | -- | --
-TBD | TBD | TBD
+Mode | Select |Selects one of the operation modes `Default`, `Peak Shaving` or `Self Consumption`.
+PV | Switch | Enables PV strings.
+ACE threshold | Number | Current threshold for the ACE function. Valid values min=0.0, step=0.1, max=100.0. Unit "A".
+ACE | Switch | Enable current equalization (ACE) when current in any Mains phase exceeds the ACE threshold.
+Lower Reference | Number | Battery state-of-charge (SoC), below which it is not allowed to discharge battery. Valid values min=0.0, step=0.1, max=100.0. Unit "%".
+Upper Reference | Number | Battery state-of-charge (SoC), above which it is not allowed to charge battery. Valid values min=0.0, step=0.1, max=100.0. Unit "%".
+Get Data | Button | Reads the current configuration from the Ferroamp system and sets the values of all the entities.
+Update | Button | Writes the values of all entities to the Ferroamp system.
+
+### Entities used by Operation Mode Default
+
+Entity | Type | Descriptions, valid value ranges.
+-- | -- | --
+Limit Import | Switch | If enabled, the system is not allowed to import power from the grid, above the Import Threshold.
+Limit Export | Switch | If enabled, the system is not allowed to export power to the grid, below the Export Threshold.
+Import Threshold | Number | Threshold on grid power, above which the system is not allowed to import power from the grid. Unit "W".
+Export Threshold | Number | Threshold on grid power, below which the system is not allowed to export power to the grid. Unit "W".
+Battery Power Mode | Select | Select one the batter power modes `Off`, `Charge` or `Discharge`.
+Discharge Reference | Number | Constant power reference for the battery, as long as the SoC is within the upper and lower limits. Valid values min=0.0, step=0.1, max=100000.0. Unit "W".
+Charge Reference | Number | Constant power reference for the battery, as long as the SoC is within the upper and lower limits. Valid values min=0.0, step=0.1, max=100000.0. Unit "W".
+
+### Entities used by Operation Mode Peak Shaving
+
+Entity | Type | Descriptions, valid value ranges.
+-- | -- | --
+Limit Import | Switch | If enabled, the system is not allowed to import power from the grid, above the Discharge Threshold.
+Limit Export | Switch | If enabled, the system is not allowed to export power to the grid, below the Charge Threshold.
+Discharge Threshold | Number | Threshold on grid power, correspondning to consumption peaks, above which battery may be discharged to compensate for loads. Unit "W".
+Charge Threshold | Number | Threshold on grid power, corresponding to off-peak consumption, below which battery may be charged from the grid. Unit "W".
+Discharge Reference | Number | Maximum battery power, up to which battery may be discharged into grid, if grid power is above the Discharge Threshold. Valid values min=0.0, step=0.1, max=100000.0. Unit "W".
+Charge Reference | Number | Maximum battery power, up to which battery may be charged from grid, if grid power is below the Charge Threshold. Valid values min=0.0, step=0.1, max=100000.0. Unit "W".
+
+### Entities used by Operation Mode Self Consumption
+
+Entity | Type | Descriptions, valid value ranges.
+-- | -- | --
+Limit Import | Switch | If enabled, the system is not allowed to import power from the grid, above the Import Threshold.
+Limit Export | Switch | If enabled, the system is not allowed to export power to the grid, below the Export Threshold.
+Import Threshold | Number | Threshold on grid power, above which, self-consumption of PV power is prioritized. Batteries may be discharged to compensate for loads. Unit "W".
+Export Threshold | Number | Threshold on grid power, below which charging batteries from PV power is prioritized. Unit "W".
+Discharge Reference | Number | Maximum battery power, up to which battery may be discharged into grid, if grid power is above the Import Threshold. Valid values min=0.0, step=0.1, max=100000.0. Unit "W".
+Charge Reference | Number | Maximum battery power, up to which charging battery from PV power is prioritized, if grid power is below the Export Threshold. Valid values min=0.0, step=0.1, max=100000.0. Unit "W".
+
 
 ## Lovelace UI
 
