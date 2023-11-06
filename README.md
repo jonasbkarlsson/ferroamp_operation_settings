@@ -10,13 +10,13 @@
 
 ![Icon](assets/logo.png)
 
-The Ferroamp Operation Settings integration
+The Ferroamp Operation Settings integration implements the Operation Settings in the Ferroamp Portal. To control the Operation Settings from Home Assistant is an alternative to use the Scheduling function in the Ferroamp Portal.
 
 ## Requirements
 - Home Assistant version 2022.7 or newer.
 
 ## Features
-- TBD
+- Implements the Operation Settings in the Ferroamp Portal
 
 ## Installation
 
@@ -42,21 +42,39 @@ The configuration is done in the Home Assistant user interface.
 
 Parameter | Required | Description
 -- | -- | --
-TBD | Yes | TBD
+Name | Yes | The device name.
+System ID | Yes | The Ferroamp system ID
+Login email | Yes | The email used to login to the Ferroamp Portal
+Password | Yes | The password used to login to the Ferroamp Portal
 
-With the exception of Name, the above configuration items can be changed after intial configuration in Settings -> Devices & Services -> Integrations -> Ferroamp Operation Settings -> 1 device -> Configure. To change Name, the native way to rename Integrations or Devices in Home Assistant can be used.
-
-### Configuration entities
-
-Entity | Type | Descriptions, valid value ranges and service calls
--- | -- | --
-TBD | TBD | TBD
+With the exception of Name, the above configuration items can be changed after intial configuration in Settings -> Devices & Services -> Integrations -> Ferroamp Operation Settings -> Configure. To change Name, the native way to rename Integrations or Devices in Home Assistant can be used.
 
 ## Entities
 
-Entity | Type | Description
+Entities of type Select can be set by service call `select.select_option`.
+
+### Common entities for all Operation Modes
+
+Entity | Type | Descriptions, valid value ranges.
 -- | -- | --
-TBD | TBD | TBD
+Mode | Select |Selects one of the operation modes `Default`, `Peak Shaving` or `Self Consumption`.
+PV | Switch | Enables PV strings.
+ACE threshold | Number | Current threshold for the ACE function. Valid values min=0.0, step=0.1, max=100.0.
+ACE | switch | Enable current equalization (ACE) when current in any Mains phase exceeds the ACE threshold.
+Limit Import | switch | If enabled, the system is not allowed to import power from the grid, above the Import Threshold.
+Limit Export | switch | If enabled, the system is not allowed to export power to the grid, below the Import Threshold.
+Lower Reference | Number | Battery state-of-charge (SoC), below which it is not allowed to discharge battery.
+Upper Reference | Number | Battery state-of-charge (SoC), above which it is not allowed to charge battery.
+Get Data | Button | Reads the current configuration from the Ferroamp system and sets the values of all the entities.
+Update | Button | Writes the values of all entities to the Ferroamp system.
+
+### Entities used by Operation Mode Default
+Entity | Type | Descriptions, valid value ranges.
+-- | -- | --
+Import Threshold | Number | Threshold on grid power, above which the system is not allowed to import power from the grid.
+Export Threshold | Number | Threshold on grid power, below which the system is not allowed to export power to the grid.
+Battery Power Mode | Select | Select one the batter power modes `Off`, `Charge` or `Discharge`.
+Discharge Reference | Number |
 
 ## Lovelace UI
 
