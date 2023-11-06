@@ -31,7 +31,7 @@ from .const import MOCK_CONFIG_ALL
 
 
 # pylint: disable=unused-argument
-async def test_select(hass, bypass_validate_input_sensors):
+async def test_select(hass):
     """Test sensor properties."""
     # Create a mock entry so we don't have to go through config flow
     config_entry = MockConfigEntry(
@@ -53,10 +53,10 @@ async def test_select(hass, bypass_validate_input_sensors):
     # Get the selects
     select_mode: FerroampOperationSettingsSelectMode = hass.data["entity_components"][
         SELECT
-    ].get_entity("select.none_charge_start_time")
+    ].get_entity("select.none_mode")
     select_battery_power_mode: FerroampOperationSettingsSelectBatteryPowerMode = (
         hass.data["entity_components"][SELECT].get_entity(
-            "select.none_charge_completion_time"
+            "select.none_battery_power_mode"
         )
     )
     assert select_mode
@@ -80,7 +80,7 @@ def mock_last_state_select_fixture():
     """Mock last state."""
 
     restored: State = State(
-        entity_id="select.none_charge_completion_time", state="11:00"
+        entity_id="select.none_charge_completion_time", state="Discharge"
     )
     with patch(
         "homeassistant.helpers.restore_state.RestoreEntity.async_get_last_state",
@@ -89,9 +89,7 @@ def mock_last_state_select_fixture():
         yield
 
 
-async def test_select_restore(
-    hass: HomeAssistant, bypass_validate_input_sensors, mock_last_state_select
-):
+async def test_select_restore(hass: HomeAssistant, mock_last_state_select):
     """Test sensor properties."""
 
     # Create a mock entry so we don't have to go through config flow
@@ -104,15 +102,15 @@ async def test_select_restore(
 
     select_battery_power_mode: FerroampOperationSettingsSelectBatteryPowerMode = (
         hass.data["entity_components"][SELECT].get_entity(
-            "select.none_charge_completion_time"
+            "select.none_battery_power_mode"
         )
     )
 
-    await select_battery_power_mode.async_select_option("10:00")
-    assert select_battery_power_mode.state == "10:00"
+    await select_battery_power_mode.async_select_option("Charge")
+    assert select_battery_power_mode.state == "Charge"
 
     await select_battery_power_mode.async_added_to_hass()
-    assert select_battery_power_mode.state == "11:00"
+    assert select_battery_power_mode.state == "Discharge"
 
     # Unload the entry and verify that the data has been removed
     assert await async_unload_entry(hass, config_entry)

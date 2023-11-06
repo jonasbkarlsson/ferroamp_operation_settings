@@ -26,7 +26,7 @@ from .const import MOCK_CONFIG_ALL
 
 
 # pylint: disable=unused-argument
-async def test_button(hass, bypass_validate_input_sensors):
+async def test_button(hass):
     """Test buttons."""
     # Create a mock entry so we don't have to go through config flow
     config_entry = MockConfigEntry(
@@ -46,24 +46,20 @@ async def test_button(hass, bypass_validate_input_sensors):
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
 
     # Get the buttons
-    button_start: FerroampOperationSettingsButtonGetData = hass.data[
+    button_get_data: FerroampOperationSettingsButtonGetData = hass.data[
         "entity_components"
-    ][BUTTON].get_entity("button.none_manually_start_charging")
-    button_stop: FerroampOperationSettingsButtonUpdate = hass.data["entity_components"][
-        BUTTON
-    ].get_entity("button.none_manually_stop_charging")
-    assert button_start
-    assert button_stop
-    assert isinstance(button_start, FerroampOperationSettingsButtonGetData)
-    assert isinstance(button_stop, FerroampOperationSettingsButtonUpdate)
+    ][BUTTON].get_entity("button.none_get_data")
+    button_update: FerroampOperationSettingsButtonUpdate = hass.data[
+        "entity_components"
+    ][BUTTON].get_entity("button.none_update")
+    assert button_get_data
+    assert button_update
+    assert isinstance(button_get_data, FerroampOperationSettingsButtonGetData)
+    assert isinstance(button_update, FerroampOperationSettingsButtonUpdate)
 
-    # Test the butttons
-    await button_start.async_press()
-    assert coordinator.sensor.native_value == STATE_ON
-    await button_stop.async_press()
-    assert coordinator.sensor.native_value == STATE_OFF
-    await button_start.async_press()
-    assert coordinator.sensor.native_value == STATE_ON
+    # TODO: Test the butttons
+    await button_get_data.async_press()
+    await button_update.async_press()
 
     # Unload the entry and verify that the data has been removed
     assert await async_unload_entry(hass, config_entry)

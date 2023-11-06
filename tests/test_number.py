@@ -33,7 +33,7 @@ from .const import MOCK_CONFIG_ALL
 
 
 # pylint: disable=unused-argument
-async def test_number(hass, bypass_validate_input_sensors):
+async def test_number(hass):
     """Test sensor properties."""
     # Create a mock entry so we don't have to go through config flow
     config_entry = MockConfigEntry(
@@ -55,15 +55,15 @@ async def test_number(hass, bypass_validate_input_sensors):
     # Get the numbers
     number_ace_threshold: FerroampOperationSettingsNumberACEThreshold = hass.data[
         "entity_components"
-    ][NUMBER].get_entity("number.none_charging_speed")
+    ][NUMBER].get_entity("number.none_ace_threshold")
     number_discharge_threshold: FerroampOperationSettingsNumberDischargeThreshold = (
         hass.data["entity_components"][NUMBER].get_entity(
-            "number.none_electricity_price_limit"
+            "number.none_discharge_threshold"
         )
     )
     number_charge_threshold: FerroampOperationSettingsNumberChargeThreshold = hass.data[
         "entity_components"
-    ][NUMBER].get_entity("number.none_minimum_ev_soc")
+    ][NUMBER].get_entity("number.none_charge_threshold")
     assert number_ace_threshold
     assert number_discharge_threshold
     assert number_charge_threshold
@@ -111,9 +111,7 @@ def mock_last_state_number_fixture():
         yield
 
 
-async def test_number_restore(
-    hass: HomeAssistant, bypass_validate_input_sensors, mock_last_state_number
-):
+async def test_number_restore(hass: HomeAssistant, mock_last_state_number):
     """Test sensor properties."""
 
     # Create a mock entry so we don't have to go through config flow
@@ -126,7 +124,7 @@ async def test_number_restore(
 
     number_ace_threshold: FerroampOperationSettingsNumberACEThreshold = hass.data[
         "entity_components"
-    ][NUMBER].get_entity("number.none_charging_speed")
+    ][NUMBER].get_entity("number.none_ace_threshold")
 
     await number_ace_threshold.async_set_native_value(45)
     assert number_ace_threshold.native_value == 45

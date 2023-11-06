@@ -31,7 +31,7 @@ from .const import MOCK_CONFIG_ALL
 
 
 # pylint: disable=unused-argument
-async def test_switch(hass, bypass_validate_input_sensors):
+async def test_switch(hass):
     """Test sensor properties."""
     # Create a mock entry so we don't have to go through config flow
     config_entry = MockConfigEntry(
@@ -53,16 +53,16 @@ async def test_switch(hass, bypass_validate_input_sensors):
     # Get the switches
     switch_pv: FerroampOperationSettingsSwitchPV = hass.data["entity_components"][
         SWITCH
-    ].get_entity("switch.none_smart_charging_activated")
+    ].get_entity("switch.none_pv")
     switch_ace: FerroampOperationSettingsSwitchACE = hass.data["entity_components"][
         SWITCH
-    ].get_entity("switch.none_apply_price_limit")
+    ].get_entity("switch.none_ace")
     switch_limit_import: FerroampOperationSettingsSwitchLimitImport = hass.data[
         "entity_components"
-    ][SWITCH].get_entity("switch.none_continuous_charging_preferred")
+    ][SWITCH].get_entity("switch.none_limit_import")
     switch_limit_export: FerroampOperationSettingsSwitchLimitExport = hass.data[
         "entity_components"
-    ][SWITCH].get_entity("switch.none_ev_connected")
+    ][SWITCH].get_entity("switch.none_limit_export")
     assert switch_pv
     assert switch_ace
     assert switch_limit_import
@@ -81,11 +81,11 @@ async def test_switch(hass, bypass_validate_input_sensors):
     assert coordinator.switch_pv is True
 
     await switch_ace.async_turn_on()
-    assert coordinator.switch_apply_limit is True
+    assert coordinator.switch_ace is True
     await switch_ace.async_turn_off()
-    assert coordinator.switch_apply_limit is False
+    assert coordinator.switch_ace is False
     await switch_ace.async_turn_on()
-    assert coordinator.switch_apply_limit is True
+    assert coordinator.switch_ace is True
 
     await switch_limit_import.async_turn_on()
     assert coordinator.switch_limit_import is True
@@ -118,9 +118,7 @@ def mock_last_state_off_fixture():
         yield
 
 
-async def test_switch_off_restore(
-    hass: HomeAssistant, bypass_validate_input_sensors, mock_last_state_off
-):
+async def test_switch_off_restore(hass: HomeAssistant, mock_last_state_off):
     """Test sensor properties."""
 
     # Create a mock entry so we don't have to go through config flow
@@ -133,7 +131,7 @@ async def test_switch_off_restore(
 
     switch_pv: FerroampOperationSettingsSwitchPV = hass.data["entity_components"][
         SWITCH
-    ].get_entity("switch.none_smart_charging_activated")
+    ].get_entity("switch.none_pv")
 
     await switch_pv.async_turn_on()
     assert switch_pv.is_on is True
@@ -159,9 +157,7 @@ def mock_last_state_on_fixture():
         yield
 
 
-async def test_switch_on_restore(
-    hass: HomeAssistant, bypass_validate_input_sensors, mock_last_state_on
-):
+async def test_switch_on_restore(hass: HomeAssistant, mock_last_state_on):
     """Test sensor properties."""
 
     # Create a mock entry so we don't have to go through config flow
@@ -174,10 +170,10 @@ async def test_switch_on_restore(
 
     switch_pv: FerroampOperationSettingsSwitchPV = hass.data["entity_components"][
         SWITCH
-    ].get_entity("switch.none_smart_charging_activated")
+    ].get_entity("switch.none_pv")
 
-    await switch_pv.async_turn_on()
-    assert switch_pv.is_on is True
+    await switch_pv.async_turn_off()
+    assert switch_pv.is_on is False
 
     await switch_pv.async_added_to_hass()
     assert switch_pv.is_on is True
