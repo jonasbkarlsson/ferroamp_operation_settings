@@ -78,13 +78,13 @@ async def test_number(hass):
     # Test the numbers
 
     await number_ace_threshold.async_set_native_value(3.2)
-    assert coordinator.number_ace_threshold == 3.2
+    assert coordinator.number_ace_threshold.value == 3.2
 
     await number_discharge_threshold.async_set_native_value(123)
-    assert coordinator.number_discharge_threshold == 123
+    assert coordinator.number_discharge_threshold.value == 123
 
     await number_charge_threshold.async_set_native_value(33)
-    assert coordinator.number_charge_threshold == 33
+    assert coordinator.number_charge_threshold.value == 33
 
     # Unload the entry and verify that the data has been removed
     assert await async_unload_entry(hass, config_entry)
