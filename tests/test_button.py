@@ -1,8 +1,6 @@
 """Test ferroamp_operation_settings button."""
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from homeassistant.const import STATE_ON, STATE_OFF
-
 from custom_components.ferroamp_operation_settings import (
     async_setup_entry,
     async_unload_entry,
@@ -43,7 +41,6 @@ async def test_button(hass):
     assert isinstance(
         hass.data[DOMAIN][config_entry.entry_id], FerroampOperationSettingsCoordinator
     )
-    coordinator = hass.data[DOMAIN][config_entry.entry_id]
 
     # Get the buttons
     button_get_data: FerroampOperationSettingsButtonGetData = hass.data[

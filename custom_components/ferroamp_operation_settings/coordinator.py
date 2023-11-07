@@ -32,6 +32,9 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
         self, hass: HomeAssistant, config_entry: ConfigEntry, client: ApiClientBase
     ) -> None:
         """Initialize."""
+        # Do not pull with regular intervals
+        super().__init__(hass, _LOGGER, name=DOMAIN)
+
         self.hass = hass
         self.config_entry = config_entry
         self.api = client
@@ -57,9 +60,6 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
         self.listeners.append(
             hass.bus.async_listen(EVENT_DEVICE_REGISTRY_UPDATED, self.device_updated)
         )
-
-        # Do not pull with regular intervals
-        super().__init__(hass, _LOGGER, name=DOMAIN)
 
     async def _async_update_data(self):
         """Update data via library."""

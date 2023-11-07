@@ -14,6 +14,7 @@
 #
 # See here for more info: https://docs.pytest.org/en/latest/fixture.html (note that
 # pytest includes fixtures OOB which you can use as defined on this page)
+from http.cookies import SimpleCookie
 from unittest.mock import patch
 import pytest
 
@@ -61,4 +62,58 @@ def bypass_validate_step_user_fixture():
 def skip_service_calls_fixture():
     """Skip service calls."""
     with patch("homeassistant.core.ServiceRegistry.async_call"):
+        yield
+
+
+# This fixture prevent Home Assistant to access internet.
+@pytest.fixture(name="mock_api_wrapper_get_json", autouse=True)
+def mock_api_wrapper_get_json_fixture():
+    """Mock api_wrapper_get_json()."""
+
+    response = {
+        "_id": 1234,
+        "emsConfig": {
+            "data": {
+                "battery": {
+                    "powerRef": {"discharge": 0, "charge": 750},
+                    "socRef": {"high": 100, "low": 15},
+                },
+                "pv": {"mode": 1},
+                "grid": {
+                    "limitExport": False,
+                    "thresholds": {"high": 2000, "low": 1500},
+                    "limitImport": False,
+                    "ace": {"threshold": 9, "mode": 1},
+                },
+                "mode": 1,
+            },
+        },
+    }
+
+    with patch(
+        "custom_components.ferroamp_operation_settings.helpers.api.ApiClientBase.api_wrapper_get_json",
+        return_value=response,
+    ):
+        yield
+
+
+class MockResponse:
+    """Mock class for Response"""
+
+    cookies: SimpleCookie[str] = SimpleCookie()
+
+
+# This fixture prevent Home Assistant to access internet.
+@pytest.fixture(name="mock_api_wrapper_post_json_cookies", autouse=True)
+def mock_api_wrapper_post_json_cookies_fixture():
+    """Mock api_wrapper_post_json_cookies()."""
+
+    response: MockResponse = MockResponse()
+    response.cookies["access_token"] = SimpleCookie()
+    response.cookies["access_token"].set("access_token", "abcdef12345", "")
+
+    with patch(
+        "custom_components.ferroamp_operation_settings.helpers.api.ApiClientBase.api_wrapper_post_json_cookies",
+        return_value=response.cookies,
+    ):
         yield

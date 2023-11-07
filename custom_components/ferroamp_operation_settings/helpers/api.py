@@ -103,6 +103,30 @@ class ApiClientBase:
             _LOGGER.error("Something really wrong happened! - %s", exception)
             raise exception
 
+    async def api_wrapper_get_json(  # pylint: disable=dangerous-default-value
+        self,
+        url: str,
+        data: dict = {},
+        json: dict = {},
+        headers: dict = {},
+    ):
+        """API wrapper for get_json"""
+        return await self.api_wrapper(
+            method="get_json", url=url, data=data, json=json, headers=headers
+        )
+
+    async def api_wrapper_post_json_cookies(  # pylint: disable=dangerous-default-value
+        self,
+        url: str,
+        data: dict = {},
+        json: dict = {},
+        headers: dict = {},
+    ):
+        """API wrapper for post_json_cookies"""
+        return await self.api_wrapper(
+            method="post_json_cookies", url=url, data=data, json=json, headers=headers
+        )
+
 
 class FerroamoApiClient(ApiClientBase):
     """Ferroamp API client"""
@@ -130,8 +154,8 @@ class FerroamoApiClient(ApiClientBase):
             headers = {"Content-Type": "application/json"}
             url = baseurl + "/login"
 
-            cookies = await self.api_wrapper(
-                "post_json_cookies", url, json=loginform, headers=headers
+            cookies = await self.api_wrapper_post_json_cookies(
+                url, json=loginform, headers=headers
             )
             if cookies is not None:
                 self._cookie = Cookie.get_first_cookie(cookies)
@@ -140,7 +164,7 @@ class FerroamoApiClient(ApiClientBase):
             url = baseurl + "/service/ems-config/v1/current/" + str(self._system_id)
             headers = {"Cookie": f"{self._cookie.key}={self._cookie.value}"}
             _LOGGER.debug("url = %s", url)
-            data_ferroamp = await self.api_wrapper("get_json", url, headers=headers)
+            data_ferroamp = await self.api_wrapper_get_json(url, headers=headers)
             self._data = deepcopy(data_ferroamp)
             _LOGGER.debug("After data_ferroamp = await self.api_wrapper")
 
