@@ -71,13 +71,10 @@ class FerroampOperationSettingsSelectMode(FerroampOperationSettingsSelect):
     def __init__(self, entry, coordinator: FerroampOperationSettingsCoordinator):
         _LOGGER.debug("FerroampOperationSettingsSelectMode.__init__()")
         super().__init__(entry, coordinator)
+        self.coordinator.select_mode = self
         if self.state is None:
             self._attr_current_option = "Default"
             self.update_ha_state()
-
-    async def async_select_option(self, option: str) -> None:
-        """Change the selected option."""
-        await super().async_select_option(option)
 
 
 class FerroampOperationSettingsSelectBatteryPowerMode(FerroampOperationSettingsSelect):
@@ -91,10 +88,7 @@ class FerroampOperationSettingsSelectBatteryPowerMode(FerroampOperationSettingsS
     def __init__(self, entry, coordinator: FerroampOperationSettingsCoordinator):
         _LOGGER.debug("FerroampOperationSettingsSelectBatteryPowerMode.__init__()")
         super().__init__(entry, coordinator)
+        self.coordinator.select_battery_power_mode = self
         if self.state is None:
             self._attr_current_option = "Off"
             self.update_ha_state()
-
-    async def async_select_option(self, option: str) -> None:
-        """Change the selected option."""
-        await super().async_select_option(option)

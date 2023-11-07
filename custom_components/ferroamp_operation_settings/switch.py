@@ -75,20 +75,10 @@ class FerroampOperationSettingsSwitchPV(FerroampOperationSettingsSwitch):
     def __init__(self, entry, coordinator: FerroampOperationSettingsCoordinator):
         _LOGGER.debug("FerroampOperationSettingsSwitchPV.__init__()")
         super().__init__(entry, coordinator)
+        self.coordinator.switch_pv = self
         if self.is_on is None:
             self._attr_is_on = True
             self.update_ha_state()
-        self.coordinator.switch_pv = self.is_on
-
-    async def async_turn_on(self, **kwargs: Any) -> None:
-        """Turn the entity on."""
-        await super().async_turn_on(**kwargs)
-        await self.coordinator.switch_pv_update(True)
-
-    async def async_turn_off(self, **kwargs: Any) -> None:
-        """Turn the entity off."""
-        await super().async_turn_off(**kwargs)
-        await self.coordinator.switch_pv_update(False)
 
 
 class FerroampOperationSettingsSwitchACE(FerroampOperationSettingsSwitch):
@@ -99,20 +89,10 @@ class FerroampOperationSettingsSwitchACE(FerroampOperationSettingsSwitch):
     def __init__(self, entry, coordinator: FerroampOperationSettingsCoordinator):
         _LOGGER.debug("FerroampOperationSettingsSwitchACE.__init__()")
         super().__init__(entry, coordinator)
+        self.coordinator.switch_ace = self
         if self.is_on is None:
             self._attr_is_on = True
             self.update_ha_state()
-        self.coordinator.switch_ace = self.is_on
-
-    async def async_turn_on(self, **kwargs: Any) -> None:
-        """Turn the entity on."""
-        await super().async_turn_on(**kwargs)
-        await self.coordinator.switch_ace_update(True)
-
-    async def async_turn_off(self, **kwargs: Any) -> None:
-        """Turn the entity off."""
-        await super().async_turn_off(**kwargs)
-        await self.coordinator.switch_ace_update(False)
 
 
 class FerroampOperationSettingsSwitchLimitImport(FerroampOperationSettingsSwitch):
@@ -123,20 +103,10 @@ class FerroampOperationSettingsSwitchLimitImport(FerroampOperationSettingsSwitch
     def __init__(self, entry, coordinator: FerroampOperationSettingsCoordinator):
         _LOGGER.debug("FerroampOperationSettingsSwitchLimitImport.__init__()")
         super().__init__(entry, coordinator)
+        self.coordinator.switch_limit_import = self
         if self.is_on is None:
             self._attr_is_on = False
             self.update_ha_state()
-        self.coordinator.switch_limit_import = self.is_on
-
-    async def async_turn_on(self, **kwargs: Any) -> None:
-        """Turn the entity on."""
-        await super().async_turn_on(**kwargs)
-        await self.coordinator.switch_limit_import_update(True)
-
-    async def async_turn_off(self, **kwargs: Any) -> None:
-        """Turn the entity off."""
-        await super().async_turn_off(**kwargs)
-        await self.coordinator.switch_limit_import_update(False)
 
 
 class FerroampOperationSettingsSwitchLimitExport(FerroampOperationSettingsSwitch):
@@ -147,17 +117,7 @@ class FerroampOperationSettingsSwitchLimitExport(FerroampOperationSettingsSwitch
     def __init__(self, entry, coordinator: FerroampOperationSettingsCoordinator):
         _LOGGER.debug("FerroampOperationSettingsSwitchLimitExport.__init__()")
         super().__init__(entry, coordinator)
+        self.coordinator.switch_limit_export = self
         if self.is_on is None:
             self._attr_is_on = False
             self.update_ha_state()
-        self.coordinator.switch_limit_export = self.is_on
-
-    async def async_turn_on(self, **kwargs: Any) -> None:
-        """Turn the entity on."""
-        await super().async_turn_on(**kwargs)
-        await self.coordinator.switch_limit_export_update(True)
-
-    async def async_turn_off(self, **kwargs: Any) -> None:
-        """Turn the entity off."""
-        await super().async_turn_off(**kwargs)
-        await self.coordinator.switch_limit_export_update(False)
