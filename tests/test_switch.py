@@ -74,32 +74,32 @@ async def test_switch(hass):
 
     # Test the switches
     await switch_pv.async_turn_on()
-    assert coordinator.switch_pv is True
+    assert coordinator.switch_pv.is_on is True
     await switch_pv.async_turn_off()
-    assert coordinator.switch_pv is False
+    assert coordinator.switch_pv.is_on is False
     await switch_pv.async_turn_on()
-    assert coordinator.switch_pv is True
+    assert coordinator.switch_pv.is_on is True
 
     await switch_ace.async_turn_on()
-    assert coordinator.switch_ace is True
+    assert coordinator.switch_ace.is_on is True
     await switch_ace.async_turn_off()
-    assert coordinator.switch_ace is False
+    assert coordinator.switch_ace.is_on is False
     await switch_ace.async_turn_on()
-    assert coordinator.switch_ace is True
+    assert coordinator.switch_ace.is_on is True
 
     await switch_limit_import.async_turn_on()
-    assert coordinator.switch_limit_import is True
+    assert coordinator.switch_limit_import.is_on is True
     await switch_limit_import.async_turn_off()
-    assert coordinator.switch_limit_import is False
+    assert coordinator.switch_limit_import.is_on is False
     await switch_limit_import.async_turn_on()
-    assert coordinator.switch_limit_import is True
+    assert coordinator.switch_limit_import.is_on is True
 
     await switch_limit_export.async_turn_on()
-    assert coordinator.switch_limit_export is True
+    assert coordinator.switch_limit_export.is_on is True
     await switch_limit_export.async_turn_off()
-    assert coordinator.switch_limit_export is False
+    assert coordinator.switch_limit_export.is_on is False
     await switch_limit_export.async_turn_on()
-    assert coordinator.switch_limit_export is True
+    assert coordinator.switch_limit_export.is_on is True
 
     # Unload the entry and verify that the data has been removed
     assert await async_unload_entry(hass, config_entry)

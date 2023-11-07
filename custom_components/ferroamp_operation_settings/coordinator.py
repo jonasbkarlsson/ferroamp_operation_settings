@@ -2,6 +2,8 @@
 
 import logging
 from homeassistant.components.number import NumberEntity
+from homeassistant.components.select import SelectEntity
+from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import (
     ConfigEntry,
 )
@@ -51,10 +53,13 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
         self.number_lower_reference: NumberEntity = None
         self.number_upper_reference: NumberEntity = None
 
-        self.switch_pv = None
-        self.switch_ace = None
-        self.switch_limit_import = None
-        self.switch_limit_export = None
+        self.select_mode: SelectEntity = None
+        self.select_battery_power_mode: SelectEntity = None
+
+        self.switch_pv: SwitchEntity = None
+        self.switch_ace: SwitchEntity = None
+        self.switch_limit_import: SwitchEntity = None
+        self.switch_limit_export: SwitchEntity = None
 
         # Listen for changes to the device.
         self.listeners.append(
@@ -97,52 +102,36 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
                                     self.config_entry, title=device.name_by_user
                                 )
 
-    async def switch_pv_update(self, state: bool):
-        """Handle the PV switch"""
-        self.switch_pv = state
-        _LOGGER.debug("switch_pv_update = %s", state)
-
-    async def switch_ace_update(self, state: bool):
-        """Handle the ACE switch"""
-        self.switch_ace = state
-        _LOGGER.debug("switch_ace_update = %s", state)
-
-    async def switch_limit_import_update(self, state: bool):
-        """Handle the Limit Import switch"""
-        self.switch_limit_import = state
-        _LOGGER.debug("switch_limit_import_update = %s", state)
-
-    async def switch_limit_export_update(self, state: bool):
-        """Handle the Limit Export switch"""
-        self.switch_limit_export = state
-        _LOGGER.debug("switch_limit_export_update = %s", state)
-
     async def get_data(self):
         """Get configuration from Ferroamp system and updated entities"""
         await self.async_refresh()
         if self.last_update_success:
+            if self.data["emsConfig"]["data"]["mode"] == 2:
+                await self.select_mode.async_select_option("Peak Shaving")
+            elif self.data["emsConfig"]["data"]["mode"] == 3:
+                await self.select_mode.async_select_option("Self Consumption")
+            else:
+                await self.select_mode.async_select_option("Default")
+
+            if self.data["emsConfig"]["data"]["grid"]["ace"]["mode"] == 1:
+                await self.switch_ace.async_turn_on()
+            else:
+                await self.switch_ace.async_turn_off()
+            if self.data["emsConfig"]["data"]["grid"]["limitExport"] is True:
+                await self.switch_limit_export.async_turn_on()
+            else:
+                await self.switch_limit_export.async_turn_off()
+            if self.data["emsConfig"]["data"]["grid"]["limitImport"] is True:
+                await self.switch_limit_import.async_turn_on()
+            else:
+                await self.switch_limit_import.async_turn_off()
+            if self.data["emsConfig"]["data"]["pv"]["mode"] == 1:
+                await self.switch_pv.async_turn_on()
+            else:
+                await self.switch_pv.async_turn_off()
+
             await self.number_ace_threshold.async_set_native_value(
                 self.data["emsConfig"]["data"]["grid"]["ace"]["threshold"]
-            )
-            await self.number_discharge_threshold.async_set_native_value(
-                self.data["emsConfig"]["data"]["grid"]["thresholds"][
-                    "high"
-                ]  # Conditionally set
-            )
-            await self.number_charge_threshold.async_set_native_value(
-                self.data["emsConfig"]["data"]["grid"]["thresholds"][
-                    "low"
-                ]  # Conditionally set
-            )
-            await self.number_import_threshold.async_set_native_value(
-                self.data["emsConfig"]["data"]["grid"]["thresholds"][
-                    "high"
-                ]  # Conditionally set
-            )
-            await self.number_export_threshold.async_set_native_value(
-                self.data["emsConfig"]["data"]["grid"]["thresholds"][
-                    "low"
-                ]  # Conditionally set
             )
             await self.number_discharge_reference.async_set_native_value(
                 self.data["emsConfig"]["data"]["battery"]["powerRef"]["discharge"]
@@ -156,6 +145,30 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
             await self.number_upper_reference.async_set_native_value(
                 self.data["emsConfig"]["data"]["battery"]["socRef"]["high"]
             )
+
+            if self.select_mode.current_option == "Peak Shaving":
+                # Peak Shaving is using Discharge and Charge Thresholds
+                await self.number_discharge_threshold.async_set_native_value(
+                    self.data["emsConfig"]["data"]["grid"]["thresholds"]["high"]
+                )
+                await self.number_charge_threshold.async_set_native_value(
+                    self.data["emsConfig"]["data"]["grid"]["thresholds"]["low"]
+                )
+            else:
+                # Default and Self Consumption are using Import and Export Thresholds
+                await self.number_import_threshold.async_set_native_value(
+                    self.data["emsConfig"]["data"]["grid"]["thresholds"]["high"]
+                )
+                await self.number_export_threshold.async_set_native_value(
+                    self.data["emsConfig"]["data"]["grid"]["thresholds"]["low"]
+                )
+
+            if self.number_charge_reference.value > 0:
+                await self.select_battery_power_mode.async_select_option("Charge")
+            elif self.number_discharge_reference.value > 0:
+                await self.select_battery_power_mode.async_select_option("Discharge")
+            else:
+                await self.select_battery_power_mode.async_select_option("Off")
 
     def get_entity_id_from_unique_id(self, unique_id: str) -> str:
         """Get the Entity ID for the entity with the unique_id"""
