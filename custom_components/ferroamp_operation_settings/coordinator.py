@@ -202,7 +202,10 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
             self.number_export_threshold.async_schedule_update_ha_state()
             self.select_battery_power_mode.async_schedule_update_ha_state()
 
-            _LOGGER.debug("get_data() ends")
+        else:
+            _LOGGER.error("Get Data failed.")
+
+        _LOGGER.debug("get_data() ends")
 
     async def update(self):
         """Update the Ferroamp system with the contents of the entities"""
@@ -273,7 +276,7 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
         if update_ok:
             _LOGGER.debug("update() OK")
         else:
-            _LOGGER.debug("update() not OK")
+            _LOGGER.error("Update failed.")
 
     def get_entity_id_from_unique_id(self, unique_id: str) -> str:
         """Get the Entity ID for the entity with the unique_id"""
