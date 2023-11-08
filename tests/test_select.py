@@ -10,6 +10,8 @@ from custom_components.ferroamp_operation_settings import (
     async_unload_entry,
 )
 from custom_components.ferroamp_operation_settings.const import (
+    BATTERY_CHARGE,
+    BATTERY_DISCHARGE,
     DOMAIN,
     SELECT,
 )
@@ -80,7 +82,7 @@ def mock_last_state_select_fixture():
     """Mock last state."""
 
     restored: State = State(
-        entity_id="select.none_charge_completion_time", state="Discharge"
+        entity_id="select.none_charge_completion_time", state=BATTERY_DISCHARGE
     )
     with patch(
         "homeassistant.helpers.restore_state.RestoreEntity.async_get_last_state",
@@ -106,11 +108,11 @@ async def test_select_restore(hass: HomeAssistant, mock_last_state_select):
         )
     )
 
-    await select_battery_power_mode.async_select_option("Charge")
-    assert select_battery_power_mode.state == "Charge"
+    await select_battery_power_mode.async_select_option(BATTERY_CHARGE)
+    assert select_battery_power_mode.state == BATTERY_CHARGE
 
     await select_battery_power_mode.async_added_to_hass()
-    assert select_battery_power_mode.state == "Discharge"
+    assert select_battery_power_mode.state == BATTERY_DISCHARGE
 
     # Unload the entry and verify that the data has been removed
     assert await async_unload_entry(hass, config_entry)

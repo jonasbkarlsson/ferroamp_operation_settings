@@ -19,7 +19,15 @@ from homeassistant.helpers.entity_registry import (
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 
-from custom_components.ferroamp_operation_settings.const import DOMAIN
+from custom_components.ferroamp_operation_settings.const import (
+    BATTERY_CHARGE,
+    BATTERY_DISCHARGE,
+    BATTERY_OFF,
+    DOMAIN,
+    MODE_DEFAULT,
+    MODE_PEAK_SHAVING,
+    MODE_SELF_CONSUMPTION,
+)
 
 from custom_components.ferroamp_operation_settings.helpers.api import ApiClientBase
 
@@ -107,11 +115,11 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
         await self.async_refresh()
         if self.last_update_success:
             if self.data["emsConfig"]["data"]["mode"] == 2:
-                await self.select_mode.async_select_option("Peak Shaving")
+                await self.select_mode.async_select_option(MODE_PEAK_SHAVING)
             elif self.data["emsConfig"]["data"]["mode"] == 3:
-                await self.select_mode.async_select_option("Self Consumption")
+                await self.select_mode.async_select_option(MODE_SELF_CONSUMPTION)
             else:
-                await self.select_mode.async_select_option("Default")
+                await self.select_mode.async_select_option(MODE_DEFAULT)
 
             if self.data["emsConfig"]["data"]["grid"]["ace"]["mode"] == 1:
                 await self.switch_ace.async_turn_on()
@@ -146,7 +154,7 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
                 self.data["emsConfig"]["data"]["battery"]["socRef"]["high"]
             )
 
-            if self.select_mode.current_option == "Peak Shaving":
+            if self.select_mode.current_option == MODE_PEAK_SHAVING:
                 # Peak Shaving is using Discharge and Charge Thresholds
                 await self.number_discharge_threshold.async_set_native_value(
                     self.data["emsConfig"]["data"]["grid"]["thresholds"]["high"]
@@ -164,11 +172,13 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
                 )
 
             if self.number_charge_reference.value > 0:
-                await self.select_battery_power_mode.async_select_option("Charge")
+                await self.select_battery_power_mode.async_select_option(BATTERY_CHARGE)
             elif self.number_discharge_reference.value > 0:
-                await self.select_battery_power_mode.async_select_option("Discharge")
+                await self.select_battery_power_mode.async_select_option(
+                    BATTERY_DISCHARGE
+                )
             else:
-                await self.select_battery_power_mode.async_select_option("Off")
+                await self.select_battery_power_mode.async_select_option(BATTERY_OFF)
 
     def get_entity_id_from_unique_id(self, unique_id: str) -> str:
         """Get the Entity ID for the entity with the unique_id"""

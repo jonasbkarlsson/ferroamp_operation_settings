@@ -8,12 +8,14 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.restore_state import RestoreEntity
 
 from .const import (
+    BATTERY_OFF,
     BATTERY_POWER_MODES,
     DOMAIN,
     ENTITY_NAME_BATTERY_POWER_MODE_SELECT,
     ENTITY_NAME_MODE_SELECT,
     ICON,
     ICON_BATTERY_50,
+    MODE_DEFAULT,
     MODES,
     SELECT,
 )
@@ -73,7 +75,7 @@ class FerroampOperationSettingsSelectMode(FerroampOperationSettingsSelect):
         super().__init__(entry, coordinator)
         self.coordinator.select_mode = self
         if self.state is None:
-            self._attr_current_option = "Default"
+            self._attr_current_option = MODE_DEFAULT
             self.update_ha_state()
 
 
@@ -90,5 +92,5 @@ class FerroampOperationSettingsSelectBatteryPowerMode(FerroampOperationSettingsS
         super().__init__(entry, coordinator)
         self.coordinator.select_battery_power_mode = self
         if self.state is None:
-            self._attr_current_option = "Off"
+            self._attr_current_option = BATTERY_OFF
             self.update_ha_state()

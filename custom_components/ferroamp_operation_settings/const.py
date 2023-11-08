@@ -44,8 +44,16 @@ ENTITY_NAME_CHARGE_REFERENCE_NUMBER = "Charge reference"
 ENTITY_NAME_LOWER_REFERENCE_NUMBER = "Lower reference"
 ENTITY_NAME_UPPER_REFERENCE_NUMBER = "Upper reference"
 
-MODES = ["Default", "Peak Shaving", "Self Consumption"]
-BATTERY_POWER_MODES = ["Off", "Charge", "Discharge"]
+MODE_DEFAULT = "Default"
+MODE_PEAK_SHAVING = "Peak Shaving"
+MODE_SELF_CONSUMPTION = "Self Consumption"
+
+BATTERY_OFF = "Off"
+BATTERY_CHARGE = "Charge"
+BATTERY_DISCHARGE = "Discharge"
+
+MODES = [MODE_DEFAULT, MODE_PEAK_SHAVING, MODE_SELF_CONSUMPTION]
+BATTERY_POWER_MODES = [BATTERY_OFF, BATTERY_CHARGE, BATTERY_DISCHARGE]
 
 # Configuration and options
 CONF_DEVICE_NAME = "device_name"
