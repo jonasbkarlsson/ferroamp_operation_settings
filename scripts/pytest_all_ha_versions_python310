@@ -31,37 +31,14 @@ run_next_test() {
   fi
 }
 
-pip3 install -qq pytest-asyncio==0.20.2
-
-pip3 install -qq homeassistant==2022.7.0 pytest-homeassistant-custom-component==0.10.2
-run_first_test "strict"
-
-pip3 install -qq homeassistant==2022.7.7 pytest-homeassistant-custom-component==0.10.8
-run_next_test "strict"
-
-pip3 install -qq homeassistant==2022.8.7 pytest-homeassistant-custom-component==0.11.12
-run_next_test "strict"
-
-pip3 install -qq homeassistant==2022.9.7 pytest-homeassistant-custom-component==0.11.26
-run_next_test "strict"
-
-pip3 install -qq homeassistant==2022.10.5 pytest-homeassistant-custom-component==0.12.10
-run_next_test "strict"
-
-pip3 install -qq homeassistant==2022.11.4 pytest-homeassistant-custom-component==0.12.21
-run_next_test "strict"
-
-pip3 install -qq homeassistant==2022.12.8 pytest-homeassistant-custom-component==0.12.36
-run_next_test "auto"
-
-pip3 install -qq homeassistant==2023.1.7 pytest-homeassistant-custom-component==0.12.49
-run_next_test "auto"
+# pip3 install -qq pytest-asyncio==0.20.2
 
 # As of HA 2023.2, Python 3.9 is not supported.
-pip3 install -qq homeassistant==2023.2.5 pytest-homeassistant-custom-component==0.12.57
-run_next_test "auto"
 
 # As of HA 2023.3, Python 3.11 is supported.
+pip3 install -qq homeassistant==2023.3.0 pytest-homeassistant-custom-component==0.13.4
+run_first_test "auto"
+
 pip3 install -qq homeassistant==2023.3.6 pytest-homeassistant-custom-component==0.13.10
 run_next_test "auto"
 
