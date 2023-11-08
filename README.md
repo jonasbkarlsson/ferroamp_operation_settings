@@ -13,7 +13,7 @@
 The Ferroamp Operation Settings integration implements the Operation Settings in the Ferroamp Portal. To control the Operation Settings from Home Assistant is an alternative to use the Scheduling function in the Ferroamp Portal.
 
 ## Requirements
-- Home Assistant version 2022.7 or newer.
+- Home Assistant version 2023.3 or newer.
 
 ## Features
 - Implements the Operation Settings in the Ferroamp Portal.
