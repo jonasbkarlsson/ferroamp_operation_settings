@@ -117,3 +117,15 @@ def mock_api_wrapper_post_json_cookies_fixture():
         return_value=response.cookies,
     ):
         yield
+
+
+# This fixture prevent Home Assistant to access internet.
+@pytest.fixture(name="mock_api_wrapper_post_json_text", autouse=True)
+def mock_api_wrapper_post_json_text_fixture():
+    """Mock api_wrapper_post_json_text()."""
+
+    with patch(
+        "custom_components.ferroamp_operation_settings.helpers.api.ApiClientBase.api_wrapper_post_json_text",
+        return_value="Created",
+    ):
+        yield

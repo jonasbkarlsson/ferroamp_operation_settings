@@ -29,7 +29,9 @@ from custom_components.ferroamp_operation_settings.const import (
     MODE_SELF_CONSUMPTION,
 )
 
-from custom_components.ferroamp_operation_settings.helpers.api import ApiClientBase
+from custom_components.ferroamp_operation_settings.helpers.api import (
+    FerroampApiClient,
+)
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -39,7 +41,10 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
     """Coordinator class"""
 
     def __init__(
-        self, hass: HomeAssistant, config_entry: ConfigEntry, client: ApiClientBase
+        self,
+        hass: HomeAssistant,
+        config_entry: ConfigEntry,
+        client: FerroampApiClient,
     ) -> None:
         """Initialize."""
         # Do not pull with regular intervals
@@ -112,6 +117,7 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
 
     async def get_data(self):
         """Get configuration from Ferroamp system and updated entities"""
+        _LOGGER.debug("get_data() starts")
         await self.async_refresh()
         if self.last_update_success:
             if self.data["emsConfig"]["data"]["mode"] == 2:
@@ -179,6 +185,95 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
                 )
             else:
                 await self.select_battery_power_mode.async_select_option(BATTERY_OFF)
+
+            self.select_mode.async_schedule_update_ha_state()
+            self.switch_ace.async_schedule_update_ha_state()
+            self.switch_limit_export.async_schedule_update_ha_state()
+            self.switch_limit_import.async_schedule_update_ha_state()
+            self.switch_pv.async_schedule_update_ha_state()
+            self.number_ace_threshold.async_schedule_update_ha_state()
+            self.number_discharge_reference.async_schedule_update_ha_state()
+            self.number_charge_reference.async_schedule_update_ha_state()
+            self.number_lower_reference.async_schedule_update_ha_state()
+            self.number_upper_reference.async_schedule_update_ha_state()
+            self.number_discharge_threshold.async_schedule_update_ha_state()
+            self.number_charge_threshold.async_schedule_update_ha_state()
+            self.number_import_threshold.async_schedule_update_ha_state()
+            self.number_export_threshold.async_schedule_update_ha_state()
+            self.select_battery_power_mode.async_schedule_update_ha_state()
+
+            _LOGGER.debug("get_data() ends")
+
+    async def update(self):
+        """Update the Ferroamp system with the contents of the entities"""
+
+        _LOGGER.debug("update() starts")
+
+        body = {}
+        body["payload"] = {}
+        body["payload"]["battery"] = {}
+        body["payload"]["battery"]["powerRef"] = {}
+
+        if self.select_battery_power_mode == BATTERY_DISCHARGE:
+            body["payload"]["battery"]["powerRef"][
+                "discharge"
+            ] = self.number_discharge_reference.value
+        else:
+            body["payload"]["battery"]["powerRef"]["discharge"] = 0
+
+        if self.select_battery_power_mode == BATTERY_CHARGE:
+            body["payload"]["battery"]["powerRef"][
+                "charge"
+            ] = self.number_charge_reference.value
+        else:
+            body["payload"]["battery"]["powerRef"]["charge"] = 0
+
+        body["payload"]["battery"]["socRef"] = {}
+        body["payload"]["battery"]["socRef"]["high"] = self.number_upper_reference.value
+        body["payload"]["battery"]["socRef"]["low"] = self.number_lower_reference.value
+        body["payload"]["pv"] = {}
+        body["payload"]["pv"]["mode"] = int(self.switch_pv.is_on)
+        body["payload"]["grid"] = {}
+        body["payload"]["grid"]["limitExport"] = self.switch_limit_export.is_on
+
+        body["payload"]["grid"]["thresholds"] = {}
+        if self.select_mode.current_option == MODE_PEAK_SHAVING:
+            # Peak Shaving is using Discharge and Charge Thresholds
+            body["payload"]["grid"]["thresholds"][
+                "high"
+            ] = self.number_discharge_threshold.value
+            body["payload"]["grid"]["thresholds"][
+                "low"
+            ] = self.number_charge_threshold.value
+        else:
+            # Default and Self Consumption are using Import and Export Thresholds
+            body["payload"]["grid"]["thresholds"][
+                "high"
+            ] = self.number_import_threshold.value
+            body["payload"]["grid"]["thresholds"][
+                "low"
+            ] = self.number_export_threshold.value
+
+        body["payload"]["grid"]["limitImport"] = self.switch_limit_import.is_on
+
+        body["payload"]["grid"]["ace"] = {}
+        body["payload"]["grid"]["ace"]["threshold"] = self.number_ace_threshold.value
+        body["payload"]["grid"]["ace"]["mode"] = int(self.switch_ace.is_on)
+
+        if self.select_mode.current_option == MODE_PEAK_SHAVING:
+            body["payload"]["mode"] = 2
+        elif self.select_mode.current_option == MODE_SELF_CONSUMPTION:
+            body["payload"]["mode"] = 3
+        else:
+            # Default mode
+            body["payload"]["mode"] = 1
+
+        _LOGGER.debug("body = %s", str(body))
+        update_ok = await self.api.async_set_data(body)
+        if update_ok:
+            _LOGGER.debug("update() OK")
+        else:
+            _LOGGER.debug("update() not OK")
 
     def get_entity_id_from_unique_id(self, unique_id: str) -> str:
         """Get the Entity ID for the entity with the unique_id"""
