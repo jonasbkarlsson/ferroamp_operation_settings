@@ -43,6 +43,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     password = get_parameter(entry, CONF_LOGIN_PASSWORD)
     client = FerroampApiClient(system_id, email, password, session)
     coordinator = FerroampOperationSettingsCoordinator(hass, entry, client)
+    await coordinator.async_config_entry_first_refresh()
     hass.data[DOMAIN][entry.entry_id] = coordinator
 
     for platform in PLATFORMS:
