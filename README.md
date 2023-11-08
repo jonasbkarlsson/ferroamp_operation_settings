@@ -242,10 +242,10 @@ cards:
       show_header_toggle: false
   - type: entities
     entities:
-      - entity: number.ferroamp_operation_settings_lower_reference
-        name: Lower Reference (%)
       - entity: number.ferroamp_operation_settings_upper_reference
         name: Upper Reference (%)
+      - entity: number.ferroamp_operation_settings_lower_reference
+        name: Lower Reference (%)
     title: Battery State-of-Charge (SOC)
     show_header_toggle: false
   - type: entities
