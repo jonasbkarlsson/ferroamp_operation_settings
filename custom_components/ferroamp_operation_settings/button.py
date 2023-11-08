@@ -26,6 +26,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
     buttons.append(FerroampOperationSettingsButtonGetData(entry, coordinator))
     buttons.append(FerroampOperationSettingsButtonUpdate(entry, coordinator))
     async_add_devices(buttons)
+    await coordinator.platform_started(BUTTON)
 
 
 class FerroampOperationSettingsButton(FerroampOperationSettingsEntity, ButtonEntity):

@@ -51,6 +51,7 @@ async def async_setup_entry(
     numbers.append(FerroampOperationSettingsNumberLowerReference(entry, coordinator))
     numbers.append(FerroampOperationSettingsNumberUpperReference(entry, coordinator))
     async_add_devices(numbers)
+    await coordinator.platform_started(NUMBER)
 
 
 class FerroampOperationSettingsNumber(FerroampOperationSettingsEntity, RestoreNumber):

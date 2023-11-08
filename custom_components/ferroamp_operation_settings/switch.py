@@ -34,6 +34,7 @@ async def async_setup_entry(
     switches.append(FerroampOperationSettingsSwitchLimitImport(entry, coordinator))
     switches.append(FerroampOperationSettingsSwitchLimitExport(entry, coordinator))
     async_add_devices(switches)
+    await coordinator.platform_started(SWITCH)
 
 
 class FerroampOperationSettingsSwitch(
