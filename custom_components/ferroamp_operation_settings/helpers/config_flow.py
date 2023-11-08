@@ -7,7 +7,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.device_registry import async_get as async_device_registry_get
 from homeassistant.helpers.device_registry import DeviceRegistry
 
-from custom_components.ferroamp_operation_settings.helpers.api import FerroamoApiClient
+from custom_components.ferroamp_operation_settings.helpers.api import FerroampApiClient
 
 
 # pylint: disable=relative-beyond-top-level
@@ -32,7 +32,7 @@ class FlowValidator:
         """Validate step_user"""
 
         session = async_get_clientsession(hass)
-        client = FerroamoApiClient(
+        client = FerroampApiClient(
             user_input[CONF_SYSTEM_ID],
             user_input[CONF_LOGIN_EMAIL],
             user_input[CONF_LOGIN_PASSWORD],

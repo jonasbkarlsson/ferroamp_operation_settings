@@ -50,10 +50,12 @@ class ApiClientBase:
             async with async_timeout.timeout(TIMEOUT):
                 if method == "get_json":
                     response = await self._session.get(url, headers=headers)
+                    _LOGGER.debug("response.status = %s", response.status)
                     return await response.json()
 
-                elif method == "post_data_text":
-                    response = await self._session.post(url, headers=headers, data=data)
+                elif method == "post_json_text":
+                    response = await self._session.post(url, headers=headers, json=json)
+                    _LOGGER.debug("response.status = %s", response.status)
                     return await response.text()
 
                 elif method == "post_json_cookies":
@@ -64,15 +66,18 @@ class ApiClientBase:
                         ssl=False,
                         allow_redirects=False,
                     )
+                    _LOGGER.debug("response.status = %s", response.status)
                     if len(response.cookies) > 0:
-                        print("Request was successful.")
+                        print("Cookies received.")
                         # Access and print the cookies from the response
-                        cookies = response.cookies
-                        for key, value in cookies.items():
-                            print(f"Cookie - {key}: {value.value}")
+                        # cookies = response.cookies
+                        # for key, value in cookies.items():
+                        #    print(f"Cookie - {key}: {value.value}")
                         return response.cookies
 
-                    print(f"Request failed with status code: {response.status}")
+                    _LOGGER.debug(
+                        "Cookies NOT received. Status code = %s", response.status
+                    )
                     return None
 
         except asyncio.TimeoutError as exception:
@@ -115,6 +120,18 @@ class ApiClientBase:
             method="get_json", url=url, data=data, json=json, headers=headers
         )
 
+    async def api_wrapper_post_json_text(  # pylint: disable=dangerous-default-value
+        self,
+        url: str,
+        data: dict = {},
+        json: dict = {},
+        headers: dict = {},
+    ):
+        """API wrapper for post_json_text"""
+        return await self.api_wrapper(
+            method="post_json_text", url=url, data=data, json=json, headers=headers
+        )
+
     async def api_wrapper_post_json_cookies(  # pylint: disable=dangerous-default-value
         self,
         url: str,
@@ -128,7 +145,7 @@ class ApiClientBase:
         )
 
 
-class FerroamoApiClient(ApiClientBase):
+class FerroampApiClient(ApiClientBase):
     """Ferroamp API client"""
 
     def __init__(
@@ -172,3 +189,42 @@ class FerroamoApiClient(ApiClientBase):
             return data_ferroamp
 
         return None
+
+    async def async_set_data(self, body: dict) -> bool:
+        """Set data to the API."""
+
+        baseurl = "https://portal.ferroamp.com"
+        if self._cookie is None:
+            loginform = {
+                "email": f"{self._email}",
+                "password": f"{self._password}",
+            }
+            headers = {"Content-Type": "application/json"}
+            url = baseurl + "/login"
+
+            cookies = await self.api_wrapper_post_json_cookies(
+                url, json=loginform, headers=headers
+            )
+            if cookies is not None:
+                self._cookie = Cookie.get_first_cookie(cookies)
+
+        if self._cookie is not None:
+            url = (
+                baseurl + "/service/ems-config/v1/commands/set/" + str(self._system_id)
+            )
+            headers = {
+                "Content-Type": "application/json",
+                "Cookie": f"{self._cookie.key}={self._cookie.value}",
+            }
+            _LOGGER.debug("url = %s", url)
+            _LOGGER.debug("headers = %s", headers)
+            response = await self.api_wrapper_post_json_text(
+                url, headers=headers, json=body
+            )
+            _LOGGER.debug("response = %s", response)
+
+            if response == "Created":
+                # Configuration successfully updated!
+                return True
+
+        return False

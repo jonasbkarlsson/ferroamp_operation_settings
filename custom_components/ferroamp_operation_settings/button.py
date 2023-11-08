@@ -59,4 +59,4 @@ class FerroampOperationSettingsButtonUpdate(FerroampOperationSettingsButton):
 
     async def async_press(self) -> None:
         """Press the button."""
-        # TODO: await self.coordinator.turn_off_charging()
+        await self.coordinator.update()

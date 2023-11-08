@@ -14,7 +14,7 @@ from homeassistant.helpers.entity_registry import (
     async_entries_for_config_entry,
 )
 
-from custom_components.ferroamp_operation_settings.helpers.api import FerroamoApiClient
+from custom_components.ferroamp_operation_settings.helpers.api import FerroampApiClient
 from custom_components.ferroamp_operation_settings.helpers.general import get_parameter
 
 from .coordinator import FerroampOperationSettingsCoordinator
@@ -41,7 +41,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     system_id = get_parameter(entry, CONF_SYSTEM_ID)
     email = get_parameter(entry, CONF_LOGIN_EMAIL)
     password = get_parameter(entry, CONF_LOGIN_PASSWORD)
-    client = FerroamoApiClient(system_id, email, password, session)
+    client = FerroampApiClient(system_id, email, password, session)
     coordinator = FerroampOperationSettingsCoordinator(hass, entry, client)
     await coordinator.async_config_entry_first_refresh()
     hass.data[DOMAIN][entry.entry_id] = coordinator
