@@ -258,10 +258,167 @@ cards:
     show_header_toggle: false
 ```
 
-### Example of automation to TBD
+## Example of automations
+
+### Stop Charging
 ```
+alias: Stop Charging
+description: ""
+trigger: []
+condition: []
+action:
+  - service: button.press
+    target:
+      entity_id: button.ferroamp_operation_settings_get_data
+    data: {}
+  - service: select.select_option
+    target:
+      entity_id: select.ferroamp_operation_settings_mode
+    data:
+      option: Default
+  - service: select.select_option
+    target:
+      entity_id: select.ferroamp_operation_settings_battery_power_mode
+    data:
+      option: "Off"
+  - service: button.press
+    target:
+      entity_id: button.ferroamp_operation_settings_update
+    data: {}
+mode: single
 ```
 
+### Start Charging
+```
+alias: Start Charging
+description: ""
+trigger: []
+condition: []
+action:
+  - service: button.press
+    target:
+      entity_id: button.ferroamp_operation_settings_get_data
+    data: {}
+  - service: select.select_option
+    target:
+      entity_id: select.ferroamp_operation_settings_mode
+    data:
+      option: Default
+  - service: select.select_option
+    target:
+      entity_id: select.ferroamp_operation_settings_battery_power_mode
+    data:
+      option: Charge
+  - service: number.set_value
+    target:
+      entity_id: number.ferroamp_operation_settings_charge_reference
+    data:
+      value: "2000"
+  - service: button.press
+    target:
+      entity_id: button.ferroamp_operation_settings_update
+    data: {}
+mode: single
+```
+
+### Start Discharging
+```
+alias: Start Discharging
+description: ""
+trigger: []
+condition: []
+action:
+  - service: button.press
+    target:
+      entity_id: button.ferroamp_operation_settings_get_data
+    data: {}
+  - service: select.select_option
+    target:
+      entity_id: select.ferroamp_operation_settings_mode
+    data:
+      option: Default
+  - service: select.select_option
+    target:
+      entity_id: select.ferroamp_operation_settings_battery_power_mode
+    data:
+      option: Discharge
+  - service: number.set_value
+    target:
+      entity_id: number.ferroamp_operation_settings_charge_reference
+    data:
+      value: "2000"
+  - service: button.press
+    target:
+      entity_id: button.ferroamp_operation_settings_update
+    data: {}
+mode: single
+```
+
+### Start Peak Shaving
+```
+alias: Start Peak Shaving
+description: ""
+trigger: []
+condition: []
+action:
+  - service: button.press
+    target:
+      entity_id: button.ferroamp_operation_settings_get_data
+    data: {}
+  - service: select.select_option
+    target:
+      entity_id: select.ferroamp_operation_settings_mode
+    data:
+      option: Peak Shaving
+  - service: number.set_value
+    target:
+      entity_id: number.ferroamp_operation_settings_discharge_threshold
+    data:
+      value: "3000"
+  - service: number.set_value
+    target:
+      entity_id: number.ferroamp_operation_settings_charge_threshold
+    data:
+      value: "2000"
+  - service: button.press
+    target:
+      entity_id: button.ferroamp_operation_settings_update
+    data: {}
+mode: single
+```
+
+### Start Self Consumption
+```
+alias: Start Self Consumption
+description: ""
+trigger: []
+condition: []
+action:
+  - service: button.press
+    target:
+      entity_id: button.ferroamp_operation_settings_get_data
+    data: {}
+  - service: select.select_option
+    target:
+      entity_id: select.ferroamp_operation_settings_mode
+    data:
+      option: Self Consumption
+  - service: number.set_value
+    target:
+      entity_id: number.ferroamp_operation_settings_import_threshold
+    data:
+      value: "4000"
+  - service: number.set_value
+    target:
+      entity_id: number.ferroamp_operation_settings_export_threshold
+    data:
+      value: "3000"
+  - service: button.press
+    target:
+      entity_id: button.ferroamp_operation_settings_update
+    data: {}
+mode: single
+```
 
 [ferroamp_operation_settings]: https://github.com/jonasbkarlsson/ferroamp_operation_settings
 [releases-shield]: https://img.shields.io/github/v/release/jonasbkarlsson/ferroamp_operation_settings?style=for-the-badge
