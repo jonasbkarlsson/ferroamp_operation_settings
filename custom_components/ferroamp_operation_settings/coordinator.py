@@ -55,6 +55,7 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
         self.api = client
         self.listeners = []
         self.platforms = []
+        self.platforms_started = []
 
         self.number_ace_threshold: NumberEntity = None
         self.number_discharge_threshold: NumberEntity = None
@@ -114,6 +115,13 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
                                 self.hass.config_entries.async_update_entry(
                                     self.config_entry, title=device.name_by_user
                                 )
+
+    async def platform_started(self, platform: str):
+        """Register started platforms"""
+        self.platforms_started.append(platform)
+        if all(item in self.platforms_started for item in self.platforms):
+            # Get Data when all platforms have started.
+            await self.get_data()
 
     async def get_data(self):
         """Get configuration from Ferroamp system and updated entities"""
@@ -211,6 +219,10 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
         """Update the Ferroamp system with the contents of the entities"""
 
         _LOGGER.debug("update() starts")
+
+        if not self.last_update_success:
+            _LOGGER.error("Get Data before Update!")
+            return
 
         body = {}
         body["payload"] = {}

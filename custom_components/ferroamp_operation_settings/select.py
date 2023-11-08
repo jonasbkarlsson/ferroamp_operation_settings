@@ -35,6 +35,7 @@ async def async_setup_entry(
     selects.append(FerroampOperationSettingsSelectMode(entry, coordinator))
     selects.append(FerroampOperationSettingsSelectBatteryPowerMode(entry, coordinator))
     async_add_devices(selects)
+    await coordinator.platform_started(SELECT)
 
 
 class FerroampOperationSettingsSelect(
