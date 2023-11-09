@@ -1,5 +1,7 @@
 """API Client."""
 from copy import deepcopy
+from datetime import datetime, timedelta
+from http.cookies import Morsel, SimpleCookie
 import logging
 import asyncio
 import socket
@@ -19,11 +21,19 @@ class Cookie:
     """Cookie class"""
 
     @staticmethod
-    def get_first_cookie(cookies):
+    def get_first_cookie(cookies: SimpleCookie):
         """Get the first cookie, if it exists."""
         if cookies is None or len(cookies) == 0:
             return None
         return cookies[next(iter(cookies))]
+
+    @staticmethod
+    def get_expires(cookie: Morsel) -> datetime:
+        """Get the expire time for the cookie."""
+        date_string = cookie["expires"]
+        date_format = "%a, %d %b %Y %H:%M:%S %Z"
+        parsed_datetime: datetime.datetime = datetime.strptime(date_string, date_format)
+        return parsed_datetime
 
 
 class ApiClientBase:
@@ -159,10 +169,23 @@ class FerroampApiClient(ApiClientBase):
         self._cookie = None
         self._data = None
 
+    def check_cookie_expires(self):
+        """Check if the cookie is about to expire"""
+        if self._cookie is not None:
+            _LOGGER.debug("Cookie expires = %s", Cookie.get_expires(self._cookie))
+            expires = Cookie.get_expires(self._cookie)  # Assumes time is UTC
+            now = datetime.utcnow()
+            delta = expires - now
+            margin = timedelta(seconds=60)
+            if delta < margin:
+                _LOGGER.debug("Cookie expires soon.")
+                self._cookie = None
+
     async def async_get_data(self) -> dict:
         """Get data from the API."""
 
         baseurl = "https://portal.ferroamp.com"
+        self.check_cookie_expires()
         if self._cookie is None:
             loginform = {
                 "email": f"{self._email}",
@@ -184,7 +207,6 @@ class FerroampApiClient(ApiClientBase):
             data_ferroamp = await self.api_wrapper_get_json(url, headers=headers)
             self._data = deepcopy(data_ferroamp)
             _LOGGER.debug("After data_ferroamp = await self.api_wrapper")
-
             _LOGGER.debug("data_ferroamp = %s", data_ferroamp)
             return data_ferroamp
 
@@ -194,6 +216,7 @@ class FerroampApiClient(ApiClientBase):
         """Set data to the API."""
 
         baseurl = "https://portal.ferroamp.com"
+        self.check_cookie_expires()
         if self._cookie is None:
             loginform = {
                 "email": f"{self._email}",
@@ -201,7 +224,6 @@ class FerroampApiClient(ApiClientBase):
             }
             headers = {"Content-Type": "application/json"}
             url = baseurl + "/login"
-
             cookies = await self.api_wrapper_post_json_cookies(
                 url, json=loginform, headers=headers
             )
