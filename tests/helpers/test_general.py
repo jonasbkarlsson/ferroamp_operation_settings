@@ -13,9 +13,7 @@ from custom_components.ferroamp_operation_settings.helpers.general import (
     get_parameter,
 )
 
-from tests.const import (
-    MOCK_CONFIG_ALL,
-)
+from tests.helpers.const import MOCK_CONFIG_DATA, MOCK_CONFIG_OPTIONS
 
 
 # pylint: disable=unused-argument
@@ -34,8 +32,9 @@ async def test_is_float(hass):
 async def test_get_parameter(hass):
     """Test get_parameter"""
 
-    config_entry = MockConfigEntry(data=MOCK_CONFIG_ALL)
+    config_entry = MockConfigEntry(data=MOCK_CONFIG_DATA, options=MOCK_CONFIG_OPTIONS)
     config_entry.add_to_hass(hass)
     assert get_parameter(config_entry, CONF_SYSTEM_ID) == 1234
-    assert get_parameter(config_entry, CONF_LOGIN_EMAIL) == "abc@d.c"
-    assert get_parameter(config_entry, CONF_LOGIN_PASSWORD) == "passsword"
+    assert get_parameter(config_entry, CONF_LOGIN_EMAIL) == "abc@d.e"
+    assert get_parameter(config_entry, CONF_LOGIN_PASSWORD) is None
+    assert get_parameter(config_entry, CONF_LOGIN_PASSWORD, "password") == "password"

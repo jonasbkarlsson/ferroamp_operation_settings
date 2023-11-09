@@ -6,11 +6,13 @@ from homeassistant import config_entries, data_entry_flow
 from homeassistant.core import HomeAssistant
 
 import pytest
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.ferroamp_operation_settings.const import DOMAIN
 
 from .const import (
     MOCK_CONFIG_ALL,
+    MOCK_OPTIONS_ALL,
 )
 
 
@@ -80,3 +82,34 @@ async def test_unsuccessful_config_flow(hass: HomeAssistant):
     # TODO: assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
     # TODO: assert result["step_id"] == "user"
     # TODO: assert len(result["errors"]) > 0
+
+
+# Simulate a successful option flow
+async def test_successful_config_flow_option(hass: HomeAssistant):
+    """Test a option flow."""
+
+    config_entry: config_entries.ConfigEntry = MockConfigEntry(
+        domain=DOMAIN, data=MOCK_CONFIG_ALL, entry_id="test"
+    )
+    config_entry.add_to_hass(hass)
+
+    # Initialize a option flow
+    result = await hass.config_entries.options.async_init(
+        handler="test", context={"source": "init"}
+    )
+
+    # Check that the option flow shows the init form
+    assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+    assert result["step_id"] == "init"
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input=MOCK_OPTIONS_ALL
+    )
+
+    # Check that the option flow is complete and a new entry is created with
+    # the input data
+    assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
+    assert result["data"] == MOCK_OPTIONS_ALL
+    if "errors" in result.keys():
+        assert len(result["errors"]) == 0
+    assert result["result"]
