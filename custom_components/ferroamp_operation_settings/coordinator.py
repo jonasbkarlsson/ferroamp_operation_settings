@@ -1,5 +1,6 @@
 """Coordinator for Ferroamp Operation Settings"""
 
+from datetime import datetime
 import logging
 from homeassistant.components.number import NumberEntity
 from homeassistant.components.select import SelectEntity
@@ -15,6 +16,9 @@ from homeassistant.helpers.entity_registry import async_get as async_entity_regi
 from homeassistant.helpers.entity_registry import (
     EntityRegistry,
     async_entries_for_config_entry,
+)
+from homeassistant.helpers.event import (
+    async_call_later,
 )
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
@@ -120,99 +124,105 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
         """Register started platforms"""
         self.platforms_started.append(platform)
         if all(item in self.platforms_started for item in self.platforms):
-            # Get Data when all platforms have started.
-            await self.get_data()
+            # Update entities when all platforms have started.
+            async_call_later(self.hass, 5.0, self.update_entities)
+
+    async def update_entities(
+        self, date_time: datetime = None
+    ):  # pylint: disable=unused-argument
+        """Update entities"""
+        _LOGGER.debug("update_entities() starts")
+
+        if self.data["emsConfig"]["data"]["mode"] == 2:
+            await self.select_mode.async_select_option(MODE_PEAK_SHAVING)
+        elif self.data["emsConfig"]["data"]["mode"] == 3:
+            await self.select_mode.async_select_option(MODE_SELF_CONSUMPTION)
+        else:
+            await self.select_mode.async_select_option(MODE_DEFAULT)
+
+        if self.data["emsConfig"]["data"]["grid"]["ace"]["mode"] == 1:
+            await self.switch_ace.async_turn_on()
+        else:
+            await self.switch_ace.async_turn_off()
+        if self.data["emsConfig"]["data"]["grid"]["limitExport"] is True:
+            await self.switch_limit_export.async_turn_on()
+        else:
+            await self.switch_limit_export.async_turn_off()
+        if self.data["emsConfig"]["data"]["grid"]["limitImport"] is True:
+            await self.switch_limit_import.async_turn_on()
+        else:
+            await self.switch_limit_import.async_turn_off()
+        if self.data["emsConfig"]["data"]["pv"]["mode"] == 1:
+            await self.switch_pv.async_turn_on()
+        else:
+            await self.switch_pv.async_turn_off()
+
+        await self.number_ace_threshold.async_set_native_value(
+            self.data["emsConfig"]["data"]["grid"]["ace"]["threshold"]
+        )
+        await self.number_discharge_reference.async_set_native_value(
+            self.data["emsConfig"]["data"]["battery"]["powerRef"]["discharge"]
+        )
+        await self.number_charge_reference.async_set_native_value(
+            self.data["emsConfig"]["data"]["battery"]["powerRef"]["charge"]
+        )
+        await self.number_lower_reference.async_set_native_value(
+            self.data["emsConfig"]["data"]["battery"]["socRef"]["low"]
+        )
+        await self.number_upper_reference.async_set_native_value(
+            self.data["emsConfig"]["data"]["battery"]["socRef"]["high"]
+        )
+
+        if self.select_mode.current_option == MODE_PEAK_SHAVING:
+            # Peak Shaving is using Discharge and Charge Thresholds
+            await self.number_discharge_threshold.async_set_native_value(
+                self.data["emsConfig"]["data"]["grid"]["thresholds"]["high"]
+            )
+            await self.number_charge_threshold.async_set_native_value(
+                self.data["emsConfig"]["data"]["grid"]["thresholds"]["low"]
+            )
+        else:
+            # Default and Self Consumption are using Import and Export Thresholds
+            await self.number_import_threshold.async_set_native_value(
+                self.data["emsConfig"]["data"]["grid"]["thresholds"]["high"]
+            )
+            await self.number_export_threshold.async_set_native_value(
+                self.data["emsConfig"]["data"]["grid"]["thresholds"]["low"]
+            )
+
+        if self.number_charge_reference.value > 0:
+            await self.select_battery_power_mode.async_select_option(BATTERY_CHARGE)
+        elif self.number_discharge_reference.value > 0:
+            await self.select_battery_power_mode.async_select_option(BATTERY_DISCHARGE)
+        else:
+            await self.select_battery_power_mode.async_select_option(BATTERY_OFF)
+
+        self.select_mode.async_schedule_update_ha_state()
+        self.switch_ace.async_schedule_update_ha_state()
+        self.switch_limit_export.async_schedule_update_ha_state()
+        self.switch_limit_import.async_schedule_update_ha_state()
+        self.switch_pv.async_schedule_update_ha_state()
+        self.number_ace_threshold.async_schedule_update_ha_state()
+        self.number_discharge_reference.async_schedule_update_ha_state()
+        self.number_charge_reference.async_schedule_update_ha_state()
+        self.number_lower_reference.async_schedule_update_ha_state()
+        self.number_upper_reference.async_schedule_update_ha_state()
+        self.number_discharge_threshold.async_schedule_update_ha_state()
+        self.number_charge_threshold.async_schedule_update_ha_state()
+        self.number_import_threshold.async_schedule_update_ha_state()
+        self.number_export_threshold.async_schedule_update_ha_state()
+        self.select_battery_power_mode.async_schedule_update_ha_state()
+
+        _LOGGER.debug("update_entities() ends")
 
     async def get_data(self):
         """Get configuration from Ferroamp system and updated entities"""
         _LOGGER.debug("get_data() starts")
         await self.async_refresh()
         if self.last_update_success:
-            if self.data["emsConfig"]["data"]["mode"] == 2:
-                await self.select_mode.async_select_option(MODE_PEAK_SHAVING)
-            elif self.data["emsConfig"]["data"]["mode"] == 3:
-                await self.select_mode.async_select_option(MODE_SELF_CONSUMPTION)
-            else:
-                await self.select_mode.async_select_option(MODE_DEFAULT)
-
-            if self.data["emsConfig"]["data"]["grid"]["ace"]["mode"] == 1:
-                await self.switch_ace.async_turn_on()
-            else:
-                await self.switch_ace.async_turn_off()
-            if self.data["emsConfig"]["data"]["grid"]["limitExport"] is True:
-                await self.switch_limit_export.async_turn_on()
-            else:
-                await self.switch_limit_export.async_turn_off()
-            if self.data["emsConfig"]["data"]["grid"]["limitImport"] is True:
-                await self.switch_limit_import.async_turn_on()
-            else:
-                await self.switch_limit_import.async_turn_off()
-            if self.data["emsConfig"]["data"]["pv"]["mode"] == 1:
-                await self.switch_pv.async_turn_on()
-            else:
-                await self.switch_pv.async_turn_off()
-
-            await self.number_ace_threshold.async_set_native_value(
-                self.data["emsConfig"]["data"]["grid"]["ace"]["threshold"]
-            )
-            await self.number_discharge_reference.async_set_native_value(
-                self.data["emsConfig"]["data"]["battery"]["powerRef"]["discharge"]
-            )
-            await self.number_charge_reference.async_set_native_value(
-                self.data["emsConfig"]["data"]["battery"]["powerRef"]["charge"]
-            )
-            await self.number_lower_reference.async_set_native_value(
-                self.data["emsConfig"]["data"]["battery"]["socRef"]["low"]
-            )
-            await self.number_upper_reference.async_set_native_value(
-                self.data["emsConfig"]["data"]["battery"]["socRef"]["high"]
-            )
-
-            if self.select_mode.current_option == MODE_PEAK_SHAVING:
-                # Peak Shaving is using Discharge and Charge Thresholds
-                await self.number_discharge_threshold.async_set_native_value(
-                    self.data["emsConfig"]["data"]["grid"]["thresholds"]["high"]
-                )
-                await self.number_charge_threshold.async_set_native_value(
-                    self.data["emsConfig"]["data"]["grid"]["thresholds"]["low"]
-                )
-            else:
-                # Default and Self Consumption are using Import and Export Thresholds
-                await self.number_import_threshold.async_set_native_value(
-                    self.data["emsConfig"]["data"]["grid"]["thresholds"]["high"]
-                )
-                await self.number_export_threshold.async_set_native_value(
-                    self.data["emsConfig"]["data"]["grid"]["thresholds"]["low"]
-                )
-
-            if self.number_charge_reference.value > 0:
-                await self.select_battery_power_mode.async_select_option(BATTERY_CHARGE)
-            elif self.number_discharge_reference.value > 0:
-                await self.select_battery_power_mode.async_select_option(
-                    BATTERY_DISCHARGE
-                )
-            else:
-                await self.select_battery_power_mode.async_select_option(BATTERY_OFF)
-
-            self.select_mode.async_schedule_update_ha_state()
-            self.switch_ace.async_schedule_update_ha_state()
-            self.switch_limit_export.async_schedule_update_ha_state()
-            self.switch_limit_import.async_schedule_update_ha_state()
-            self.switch_pv.async_schedule_update_ha_state()
-            self.number_ace_threshold.async_schedule_update_ha_state()
-            self.number_discharge_reference.async_schedule_update_ha_state()
-            self.number_charge_reference.async_schedule_update_ha_state()
-            self.number_lower_reference.async_schedule_update_ha_state()
-            self.number_upper_reference.async_schedule_update_ha_state()
-            self.number_discharge_threshold.async_schedule_update_ha_state()
-            self.number_charge_threshold.async_schedule_update_ha_state()
-            self.number_import_threshold.async_schedule_update_ha_state()
-            self.number_export_threshold.async_schedule_update_ha_state()
-            self.select_battery_power_mode.async_schedule_update_ha_state()
-
+            await self.update_entities()
         else:
             _LOGGER.error("Get Data failed.")
-
         _LOGGER.debug("get_data() ends")
 
     async def update(self):

@@ -68,7 +68,7 @@ class ApiClientBase:
                     )
                     _LOGGER.debug("response.status = %s", response.status)
                     if len(response.cookies) > 0:
-                        print("Cookies received.")
+                        _LOGGER.debug("Cookies received.")
                         # Access and print the cookies from the response
                         # cookies = response.cookies
                         # for key, value in cookies.items():

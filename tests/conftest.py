@@ -129,3 +129,15 @@ def mock_api_wrapper_post_json_text_fixture():
         return_value="Created",
     ):
         yield
+
+
+# This fixture is used to prevent HomeAssistant from calling platform_started().
+# This will avoid calling async_call_later(), which will cause problem for testing.
+@pytest.fixture(name="skip_platform_started", autouse=True)
+def skip_platform_started_fixture():
+    """Skip delay of async_call_later."""
+
+    with patch(
+        "custom_components.ferroamp_operation_settings.coordinator.FerroampOperationSettingsCoordinator.platform_started"
+    ):
+        yield
