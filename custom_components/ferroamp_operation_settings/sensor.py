@@ -12,6 +12,7 @@ from custom_components.ferroamp_operation_settings.coordinator import (
 from .const import (
     DOMAIN,
     ENTITY_NAME_STATUS_SENSOR,
+    ICON_INFORMATION,
     SENSOR,
     STATUS_READY,
 )
@@ -51,6 +52,7 @@ class FerroampOperationSettingsSensorStatus(FerroampOperationSettingsSensor):
     """Ferroamp Operation Settings sensor class."""
 
     _attr_name = ENTITY_NAME_STATUS_SENSOR
+    _attr_icon = ICON_INFORMATION
 
     def __init__(self, entry, coordinator: FerroampOperationSettingsCoordinator):
         _LOGGER.debug("FerroampOperationSettingsSensorStatus.__init__()")

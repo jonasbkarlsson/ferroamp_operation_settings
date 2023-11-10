@@ -52,10 +52,12 @@ class FerroampOperationSettingsSwitch(
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the entity on."""
         self._attr_is_on = True
+        self.update_ha_state()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the entity off."""
         self._attr_is_on = False
+        self.update_ha_state()
 
     async def async_added_to_hass(self) -> None:
         """Run when entity about to be added to hass."""

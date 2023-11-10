@@ -55,6 +55,7 @@ class FerroampOperationSettingsSelect(
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
         self._attr_current_option = option
+        self.update_ha_state()
 
     async def async_added_to_hass(self) -> None:
         """Run when entity about to be added to hass."""
