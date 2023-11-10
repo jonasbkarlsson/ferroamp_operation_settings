@@ -17,6 +17,7 @@ ICON_BATTERY_50 = "mdi:battery-50"
 ICON_BATTERY_20 = "mdi:battery-20"
 ICON_DOWNLOAD = "mdi:download"
 ICON_UPDATE = "mdi:update"
+ICON_INFORMATION = "mdi:information"
 
 # Platforms
 SWITCH = Platform.SWITCH

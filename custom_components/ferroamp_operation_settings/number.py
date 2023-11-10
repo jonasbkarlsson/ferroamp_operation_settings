@@ -70,6 +70,7 @@ class FerroampOperationSettingsNumber(FerroampOperationSettingsEntity, RestoreNu
     async def async_set_native_value(self, value: float) -> None:
         """Set new value."""
         self._attr_native_value = value
+        self.update_ha_state()
 
     async def async_added_to_hass(self) -> None:
         """Run when entity about to be added to hass."""

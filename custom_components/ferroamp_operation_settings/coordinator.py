@@ -218,22 +218,6 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
         else:
             await self.select_battery_power_mode.async_select_option(BATTERY_OFF)
 
-        self.select_mode.async_schedule_update_ha_state()
-        self.switch_ace.async_schedule_update_ha_state()
-        self.switch_limit_export.async_schedule_update_ha_state()
-        self.switch_limit_import.async_schedule_update_ha_state()
-        self.switch_pv.async_schedule_update_ha_state()
-        self.number_ace_threshold.async_schedule_update_ha_state()
-        self.number_discharge_reference.async_schedule_update_ha_state()
-        self.number_charge_reference.async_schedule_update_ha_state()
-        self.number_lower_reference.async_schedule_update_ha_state()
-        self.number_upper_reference.async_schedule_update_ha_state()
-        self.number_discharge_threshold.async_schedule_update_ha_state()
-        self.number_charge_threshold.async_schedule_update_ha_state()
-        self.number_import_threshold.async_schedule_update_ha_state()
-        self.number_export_threshold.async_schedule_update_ha_state()
-        self.select_battery_power_mode.async_schedule_update_ha_state()
-
         _LOGGER.debug("update_entities() ends")
 
     async def set_status_ready(
