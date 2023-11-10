@@ -131,13 +131,13 @@ def mock_api_wrapper_post_json_text_fixture():
         yield
 
 
-# This fixture is used to prevent HomeAssistant from calling platform_started().
+# This fixture is used to prevent HomeAssistant from calling async_call_later_local().
 # This will avoid calling async_call_later(), which will cause problem for testing.
-@pytest.fixture(name="skip_platform_started", autouse=True)
-def skip_platform_started_fixture():
-    """Skip delay of async_call_later."""
+@pytest.fixture(name="skip_async_call_later_local", autouse=True)
+def skip_async_call_later_local_fixture():
+    """Skip async_call_later_local()."""
 
     with patch(
-        "custom_components.ferroamp_operation_settings.coordinator.FerroampOperationSettingsCoordinator.platform_started"
+        "custom_components.ferroamp_operation_settings.coordinator.FerroampOperationSettingsCoordinator.async_call_later_local"
     ):
         yield

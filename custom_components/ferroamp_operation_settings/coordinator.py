@@ -1,14 +1,17 @@
 """Coordinator for Ferroamp Operation Settings"""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
+from typing import Any
+from collections.abc import Callable, Coroutine
 from homeassistant.components.number import NumberEntity
 from homeassistant.components.select import SelectEntity
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import (
     ConfigEntry,
 )
-from homeassistant.core import HomeAssistant, callback, Event
+from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback, Event, HassJob
 from homeassistant.helpers.device_registry import EVENT_DEVICE_REGISTRY_UPDATED
 from homeassistant.helpers.device_registry import async_get as async_device_registry_get
 from homeassistant.helpers.device_registry import DeviceRegistry
@@ -31,6 +34,9 @@ from custom_components.ferroamp_operation_settings.const import (
     MODE_DEFAULT,
     MODE_PEAK_SHAVING,
     MODE_SELF_CONSUMPTION,
+    STATUS_READY,
+    STATUS_FAILED,
+    STATUS_SUCCESS,
 )
 
 from custom_components.ferroamp_operation_settings.helpers.api import (
@@ -79,6 +85,8 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
         self.switch_limit_import: SwitchEntity = None
         self.switch_limit_export: SwitchEntity = None
 
+        self.sensor_status: SensorEntity = None
+
         # Listen for changes to the device.
         self.listeners.append(
             hass.bus.async_listen(EVENT_DEVICE_REGISTRY_UPDATED, self.device_updated)
@@ -120,12 +128,25 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
                                     self.config_entry, title=device.name_by_user
                                 )
 
+    def async_call_later_local(
+        self,
+        hass: HomeAssistant,
+        delay: float | timedelta,
+        action: HassJob[[datetime], Coroutine[Any, Any, None] | None]
+        | Callable[[datetime], Coroutine[Any, Any, None] | None],
+    ) -> CALLBACK_TYPE:
+        """
+        Add a listener that is called in <delay>.
+        A local version of async_call_later() that can be patched by the test framework.
+        """
+        return async_call_later(hass, delay, action)
+
     async def platform_started(self, platform: str):
         """Register started platforms"""
         self.platforms_started.append(platform)
         if all(item in self.platforms_started for item in self.platforms):
             # Update entities when all platforms have started.
-            async_call_later(self.hass, 5.0, self.update_entities)
+            self.async_call_later_local(self.hass, 5.0, self.update_entities)
 
     async def update_entities(
         self, date_time: datetime = None
@@ -215,13 +236,22 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
 
         _LOGGER.debug("update_entities() ends")
 
+    async def set_status_ready(
+        self, date_time: datetime = None
+    ):  # pylint: disable=unused-argument
+        """Set status to Ready"""
+        self.sensor_status.native_value = STATUS_READY
+
     async def get_data(self):
         """Get configuration from Ferroamp system and updated entities"""
         _LOGGER.debug("get_data() starts")
         await self.async_refresh()
         if self.last_update_success:
             await self.update_entities()
+            self.sensor_status.native_value = STATUS_SUCCESS
+            self.async_call_later_local(self.hass, 7.0, self.set_status_ready)
         else:
+            self.sensor_status.native_value = STATUS_FAILED
             _LOGGER.error("Get Data failed.")
         _LOGGER.debug("get_data() ends")
 
@@ -296,8 +326,11 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
         _LOGGER.debug("body = %s", str(body))
         update_ok = await self.api.async_set_data(body)
         if update_ok:
+            self.sensor_status.native_value = STATUS_SUCCESS
+            self.async_call_later_local(self.hass, 7.0, self.set_status_ready)
             _LOGGER.debug("update() OK")
         else:
+            self.sensor_status.native_value = STATUS_FAILED
             _LOGGER.error("Update failed.")
 
     def get_entity_id_from_unique_id(self, unique_id: str) -> str:
