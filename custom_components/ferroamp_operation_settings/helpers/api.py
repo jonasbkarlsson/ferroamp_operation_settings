@@ -73,7 +73,7 @@ class ApiClientBase:
                         url,
                         headers=headers,
                         json=json,
-                        ssl=False,
+                        #                        ssl=False,
                         allow_redirects=False,
                     )
                     _LOGGER.debug("response.status = %s", response.status)
