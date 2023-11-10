@@ -4,6 +4,7 @@ from datetime import datetime
 import logging
 from homeassistant.components.number import NumberEntity
 from homeassistant.components.select import SelectEntity
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import (
     ConfigEntry,
@@ -31,6 +32,8 @@ from custom_components.ferroamp_operation_settings.const import (
     MODE_DEFAULT,
     MODE_PEAK_SHAVING,
     MODE_SELF_CONSUMPTION,
+    STATUS_UPDATE_FAILED,
+    STATUS_UPDATE_SUCCESS,
 )
 
 from custom_components.ferroamp_operation_settings.helpers.api import (
@@ -78,6 +81,8 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
         self.switch_ace: SwitchEntity = None
         self.switch_limit_import: SwitchEntity = None
         self.switch_limit_export: SwitchEntity = None
+
+        self.sensor_status: SensorEntity = None
 
         # Listen for changes to the device.
         self.listeners.append(
@@ -221,7 +226,9 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
         await self.async_refresh()
         if self.last_update_success:
             await self.update_entities()
+            self.sensor_status.native_value = STATUS_UPDATE_SUCCESS
         else:
+            self.sensor_status.native_value = STATUS_UPDATE_FAILED
             _LOGGER.error("Get Data failed.")
         _LOGGER.debug("get_data() ends")
 
@@ -296,8 +303,10 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
         _LOGGER.debug("body = %s", str(body))
         update_ok = await self.api.async_set_data(body)
         if update_ok:
+            self.sensor_status.native_value = STATUS_UPDATE_SUCCESS
             _LOGGER.debug("update() OK")
         else:
+            self.sensor_status.native_value = STATUS_UPDATE_FAILED
             _LOGGER.error("Update failed.")
 
     def get_entity_id_from_unique_id(self, unique_id: str) -> str:
