@@ -111,6 +111,7 @@ def mock_api_wrapper_post_json_cookies_fixture():
     response: MockResponse = MockResponse()
     response.cookies["access_token"] = SimpleCookie()
     response.cookies["access_token"].set("access_token", "abcdef12345", "")
+    response.cookies["access_token"]["expires"] = "Sun, 12 Nov 2023 22:19:28 GMT"
 
     with patch(
         "custom_components.ferroamp_operation_settings.helpers.api.ApiClientBase.api_wrapper_post_json_cookies",

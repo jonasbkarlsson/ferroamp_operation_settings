@@ -316,15 +316,3 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
         else:
             self.sensor_status.native_value = STATUS_FAILED
             _LOGGER.error("Update failed.")
-
-    def get_entity_id_from_unique_id(self, unique_id: str) -> str:
-        """Get the Entity ID for the entity with the unique_id"""
-        entity_registry: EntityRegistry = async_entity_registry_get(self.hass)
-        all_entities = async_entries_for_config_entry(
-            entity_registry, self.config_entry.entry_id
-        )
-        entity = [entity for entity in all_entities if entity.unique_id == unique_id]
-        if len(entity) == 1:
-            return entity[0].entity_id
-
-        return None

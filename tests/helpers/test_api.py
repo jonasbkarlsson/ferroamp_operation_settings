@@ -1,17 +1,16 @@
 """Test ferroamp_operation_settings api."""
 from datetime import datetime
 from http.cookies import Morsel, SimpleCookie
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.ferroamp_operation_settings import (
-    async_setup_entry,
-    async_unload_entry,
+from custom_components.ferroamp_operation_settings.const import (
+    CONF_LOGIN_EMAIL,
+    CONF_LOGIN_PASSWORD,
+    CONF_SYSTEM_ID,
 )
-from custom_components.ferroamp_operation_settings.coordinator import (
-    FerroampOperationSettingsCoordinator,
+from custom_components.ferroamp_operation_settings.helpers.api import (
+    Cookie,
+    FerroampApiClient,
 )
-from custom_components.ferroamp_operation_settings.const import DOMAIN
-from custom_components.ferroamp_operation_settings.helpers.api import Cookie
 
 from tests.const import MOCK_CONFIG_ALL
 
@@ -23,27 +22,31 @@ from tests.const import MOCK_CONFIG_ALL
 
 
 # pylint: disable=unused-argument
-async def test_api(hass):
-    """Test api."""
-    # Create a mock entry so we don't have to go through config flow
-    config_entry = MockConfigEntry(
-        domain=DOMAIN, data=MOCK_CONFIG_ALL, entry_id="test", title="none"
-    )
-    config_entry.add_to_hass(hass)
+# pylint: disable=protected-access
+async def test_api_client(hass):
+    """Test api client."""
 
-    # Set up the entry and assert that the values set during setup are where we expect
-    # them to be.
-    assert await async_setup_entry(hass, config_entry)
-    await hass.async_block_till_done()
-
-    assert DOMAIN in hass.data and config_entry.entry_id in hass.data[DOMAIN]
-    assert isinstance(
-        hass.data[DOMAIN][config_entry.entry_id], FerroampOperationSettingsCoordinator
+    api_client: FerroampApiClient = FerroampApiClient(
+        MOCK_CONFIG_ALL[CONF_SYSTEM_ID],
+        MOCK_CONFIG_ALL[CONF_LOGIN_EMAIL],
+        MOCK_CONFIG_ALL[CONF_LOGIN_PASSWORD],
+        None,
     )
 
-    # Unload the entry and verify that the data has been removed
-    assert await async_unload_entry(hass, config_entry)
-    assert config_entry.entry_id not in hass.data[DOMAIN]
+    assert await api_client.async_get_data()
+    assert api_client._cookie is not None
+    assert api_client._data is not None
+
+    body = {}
+    body["payload"] = {}
+    body["payload"]["battery"] = {}
+    body["payload"]["battery"]["powerRef"] = {}
+
+    assert await api_client.async_set_data(body)
+
+    # Remove cookie
+    api_client._cookie = None
+    assert await api_client.async_set_data(body)
 
 
 async def test_cookies(hass):
@@ -54,7 +57,7 @@ async def test_cookies(hass):
     cookies: SimpleCookie = SimpleCookie()
     assert Cookie.get_first_cookie(cookies) is None
     cookie: Morsel = Morsel()
-    cookie.set(key="access_token", val="abcdef", coded_val=None)
+    cookie.set("access_token", "abcdef", None)
     cookie["expires"] = "Sun, 12 Nov 2023 22:19:28 GMT"
     cookies["access_token"] = cookie
     assert Cookie.get_first_cookie(cookies) is not None
