@@ -115,7 +115,7 @@ def mock_api_wrapper_post_json_cookies_fixture():
 
     with patch(
         "custom_components.ferroamp_operation_settings.helpers.api.ApiClientBase.api_wrapper_post_json_cookies",
-        return_value=response.cookies,
+        return_value=response.cookies["access_token"],
     ):
         yield
 
@@ -128,6 +128,23 @@ def mock_api_wrapper_post_json_text_fixture():
     with patch(
         "custom_components.ferroamp_operation_settings.helpers.api.ApiClientBase.api_wrapper_post_json_text",
         return_value="Created",
+    ):
+        yield
+
+
+# This fixture prevent Home Assistant to access internet.
+@pytest.fixture(name="mock_get_cookie_from_login", autouse=True)
+def mock_get_cookie_from_login_fixture():
+    """Mock get_cookie_from_login()."""
+
+    response: MockResponse = MockResponse()
+    response.cookies["access_token"] = SimpleCookie()
+    response.cookies["access_token"].set("access_token", "abcdef12345", "")
+    response.cookies["access_token"]["expires"] = "Sun, 12 Nov 2023 22:19:28 GMT"
+
+    with patch(
+        "custom_components.ferroamp_operation_settings.helpers.api.FerroampApiClient.get_cookie_from_login",
+        return_value=response.cookies["access_token"],
     ):
         yield
 

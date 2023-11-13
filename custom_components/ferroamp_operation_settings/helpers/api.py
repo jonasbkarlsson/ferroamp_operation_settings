@@ -6,8 +6,10 @@ import logging
 import asyncio
 import socket
 from typing import TypeVar
+from urllib.parse import urlencode
 import aiohttp
 import async_timeout
+from pyquery import PyQuery as pq
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
@@ -63,8 +65,18 @@ class ApiClientBase:
                     _LOGGER.debug("response.status = %s", response.status)
                     return await response.json()
 
+                elif method == "get_text":
+                    response = await self._session.get(url, headers=headers)
+                    _LOGGER.debug("response.status = %s", response.status)
+                    return await response.text()
+
                 elif method == "post_json_text":
                     response = await self._session.post(url, headers=headers, json=json)
+                    _LOGGER.debug("response.status = %s", response.status)
+                    return await response.text()
+
+                elif method == "post_data_text":
+                    response = await self._session.post(url, headers=headers, data=data)
                     _LOGGER.debug("response.status = %s", response.status)
                     return await response.text()
 
@@ -77,13 +89,21 @@ class ApiClientBase:
                         allow_redirects=False,
                     )
                     _LOGGER.debug("response.status = %s", response.status)
+
+                    # Check if a cookie was returned
                     if len(response.cookies) > 0:
                         _LOGGER.debug("Cookies received.")
                         # Access and print the cookies from the response
                         # cookies = response.cookies
                         # for key, value in cookies.items():
                         #    print(f"Cookie - {key}: {value.value}")
-                        return response.cookies
+                        return Cookie.get_first_cookie(response.cookies)
+
+                    # Check in the cookie_jar
+                    for cookie in self._session.cookie_jar:
+                        if cookie.key == "access_token":
+                            _LOGGER.debug("Cookies received.")
+                            return cookie
 
                     _LOGGER.debug(
                         "Cookies NOT received. Status code = %s", response.status
@@ -130,6 +150,18 @@ class ApiClientBase:
             method="get_json", url=url, data=data, json=json, headers=headers
         )
 
+    async def api_wrapper_get_text(  # pylint: disable=dangerous-default-value
+        self,
+        url: str,
+        data: dict = {},
+        json: dict = {},
+        headers: dict = {},
+    ):
+        """API wrapper for get_json"""
+        return await self.api_wrapper(
+            method="get_text", url=url, data=data, json=json, headers=headers
+        )
+
     async def api_wrapper_post_json_text(  # pylint: disable=dangerous-default-value
         self,
         url: str,
@@ -140,6 +172,18 @@ class ApiClientBase:
         """API wrapper for post_json_text"""
         return await self.api_wrapper(
             method="post_json_text", url=url, data=data, json=json, headers=headers
+        )
+
+    async def api_wrapper_post_data_text(  # pylint: disable=dangerous-default-value
+        self,
+        url: str,
+        data: dict = {},
+        json: dict = {},
+        headers: dict = {},
+    ):
+        """API wrapper for post_json_text"""
+        return await self.api_wrapper(
+            method="post_data_text", url=url, data=data, json=json, headers=headers
         )
 
     async def api_wrapper_post_json_cookies(  # pylint: disable=dangerous-default-value
@@ -181,6 +225,59 @@ class FerroampApiClient(ApiClientBase):
                 _LOGGER.debug("Cookie expires soon.")
                 self._cookie = None
 
+    def get_all_cookies(self) -> {}:
+        """Get all cookies from the cookie jar."""
+        cookies = {}
+        for cookie in self._session.cookie_jar:
+            if cookie["domain"].endswith("ferroamp.com"):
+                cookies[f"{cookie.key}"] = {
+                    "key": f"{cookie.key}",
+                    "value": f"{cookie.value}",
+                }
+        return cookies
+
+    def get_cookie_from_jar(self, key: str) -> Morsel | None:
+        """Get one cookie from the cookie jar."""
+        for cookie in self._session.cookie_jar:
+            if cookie["domain"].endswith("ferroamp.com"):
+                if cookie.key == key:
+                    return cookie
+        return None
+
+    async def get_cookie_from_login(self, baseurl):
+        """Get cookies"""
+
+        body = await self.api_wrapper_get_text(url=baseurl)
+
+        d = pq(body)
+        action = d("form").attr("action")
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        body_dict = {
+            "username": f"{self._email}",
+            "password": f"{self._password}",
+        }
+        body = urlencode(body_dict)
+        headers["Cookie"] = self.get_all_cookies()
+        response = await self.api_wrapper_post_data_text(
+            url=action, headers=headers, data=body
+        )
+
+        d = pq(response)
+        action = d("form").attr("action")
+        input_all = d("form").find("input")
+        body_dict = {}
+        for input_one in input_all:
+            body_dict[input_one.name] = input_one.value
+        body = urlencode(body_dict)
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        headers["Cookie"] = self.get_all_cookies()
+        response = await self.api_wrapper_post_data_text(
+            url=action, headers=headers, data=body
+        )
+
+        cookie = self.get_cookie_from_jar("access_token")
+        return cookie
+
     async def async_get_data(self) -> dict:
         """Get data from the API."""
 
@@ -194,11 +291,15 @@ class FerroampApiClient(ApiClientBase):
             headers = {"Content-Type": "application/json"}
             url = baseurl + "/login"
 
-            cookies = await self.api_wrapper_post_json_cookies(
+            cookie = await self.api_wrapper_post_json_cookies(
                 url, json=loginform, headers=headers
             )
-            if cookies is not None:
-                self._cookie = Cookie.get_first_cookie(cookies)
+            if cookie is not None:
+                self._cookie = cookie
+            else:
+                cookie = await self.get_cookie_from_login(baseurl)
+                if cookie is not None:
+                    self._cookie = cookie
 
         if self._cookie is not None:
             url = baseurl + "/service/ems-config/v1/current/" + str(self._system_id)
@@ -224,11 +325,15 @@ class FerroampApiClient(ApiClientBase):
             }
             headers = {"Content-Type": "application/json"}
             url = baseurl + "/login"
-            cookies = await self.api_wrapper_post_json_cookies(
+            cookie = await self.api_wrapper_post_json_cookies(
                 url, json=loginform, headers=headers
             )
-            if cookies is not None:
-                self._cookie = Cookie.get_first_cookie(cookies)
+            if cookie is not None:
+                self._cookie = cookie
+            else:
+                cookie = await self.get_cookie_from_login(baseurl)
+                if cookie is not None:
+                    self._cookie = cookie
 
         if self._cookie is not None:
             url = (
