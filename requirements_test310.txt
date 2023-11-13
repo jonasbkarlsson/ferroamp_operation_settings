@@ -1,1 +1,2 @@
 pytest-homeassistant-custom-component==0.13.45
+pyquery>=2.0.0
