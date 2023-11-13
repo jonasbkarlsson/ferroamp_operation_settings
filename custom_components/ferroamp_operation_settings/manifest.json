@@ -9,6 +9,8 @@
   "documentation": "https://github.com/jonasbkarlsson/ferroamp_operation_settings/",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/jonasbkarlsson/ferroamp_operation_settings/issues",
-  "requirements": [],
+  "requirements": [
+    "pyquery>=2.0.0"
+  ],
   "version": "0.1.0"
 }
