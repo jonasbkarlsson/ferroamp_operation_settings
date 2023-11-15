@@ -18,6 +18,7 @@ from http.cookies import SimpleCookie
 from unittest.mock import patch
 import pytest
 
+# pylint: disable=line-too-long
 
 # pylint: disable=invalid-name
 pytest_plugins = "pytest_homeassistant_custom_component"
