@@ -244,63 +244,85 @@ class FerroampApiClient(ApiClientBase):
                     return cookie
         return None
 
-    async def get_cookie_from_login(self, baseurl):
+    async def get_cookie_from_login(self, baseurl: str):
         """Get cookies"""
 
-        body = await self.api_wrapper_get_text(url=baseurl)
+        cookie = None
+        try:
+            _LOGGER.debug("get_cookie_from_login: Before GET.")
+            body = await self.api_wrapper_get_text(url=baseurl)
+            _LOGGER.debug("get_cookie_from_login: After GET.")
 
-        d = pq(body)
-        action = d("form").attr("action")
-        headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        body_dict = {
-            "username": f"{self._email}",
-            "password": f"{self._password}",
-        }
-        body = urlencode(body_dict)
-        headers["Cookie"] = self.get_all_cookies()
-        response = await self.api_wrapper_post_data_text(
-            url=action, headers=headers, data=body
-        )
+            d = pq(body)
+            action = d("form").attr("action")
+            headers = {"Content-Type": "application/x-www-form-urlencoded"}
+            body_dict = {
+                "username": f"{self._email}",
+                "password": f"{self._password}",
+            }
+            body = urlencode(body_dict)
+            headers["Cookie"] = self.get_all_cookies()
+            _LOGGER.debug("get_cookie_from_login: Before first POST.")
+            response = await self.api_wrapper_post_data_text(
+                url=action, headers=headers, data=body
+            )
+            _LOGGER.debug("get_cookie_from_login: After first POST.")
 
-        d = pq(response)
-        action = d("form").attr("action")
-        input_all = d("form").find("input")
-        body_dict = {}
-        for input_one in input_all:
-            body_dict[input_one.name] = input_one.value
-        body = urlencode(body_dict)
-        headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        headers["Cookie"] = self.get_all_cookies()
-        response = await self.api_wrapper_post_data_text(
-            url=action, headers=headers, data=body
-        )
+            d = pq(response)
+            action = d("form").attr("action")
+            input_all = d("form").find("input")
+            body_dict = {}
+            for input_one in input_all:
+                body_dict[input_one.name] = input_one.value
+            body = urlencode(body_dict)
+            headers = {"Content-Type": "application/x-www-form-urlencoded"}
+            headers["Cookie"] = self.get_all_cookies()
 
-        cookie = self.get_cookie_from_jar("access_token")
+            _LOGGER.debug("get_cookie_from_login: Before second POST.")
+            response = await self.api_wrapper_post_data_text(
+                url=action, headers=headers, data=body
+            )
+            _LOGGER.debug("get_cookie_from_login: After second POST.")
+
+            cookie = self.get_cookie_from_jar("access_token")
+            if cookie:
+                _LOGGER.debug("get_cookie_from_login: Cookie found.")
+            else:
+                _LOGGER.debug("get_cookie_from_login: No cookie found.")
+
+        except Exception as exception:  # pylint: disable=broad-except
+            _LOGGER.debug(
+                "get_cookie_from_login: Something wrong happened! - %s", exception
+            )
+
         return cookie
+
+    async def get_cookie(self, baseurl: str):
+        """Make sure we have a valid cookie."""
+
+        self.check_cookie_expires()
+        if self._cookie is None:
+            cookie = await self.get_cookie_from_login(baseurl)
+            if cookie is not None:
+                self._cookie = cookie
+            else:
+                loginform = {
+                    "email": f"{self._email}",
+                    "password": f"{self._password}",
+                }
+                headers = {"Content-Type": "application/json"}
+                url = baseurl + "/login"
+                cookie = await self.api_wrapper_post_json_cookies(
+                    url, json=loginform, headers=headers
+                )
+                if cookie is not None:
+                    self._cookie = cookie
 
     async def async_get_data(self) -> dict:
         """Get data from the API."""
 
         baseurl = "https://portal.ferroamp.com"
-        self.check_cookie_expires()
-        if self._cookie is None:
-            loginform = {
-                "email": f"{self._email}",
-                "password": f"{self._password}",
-            }
-            headers = {"Content-Type": "application/json"}
-            url = baseurl + "/login"
-
-            cookie = await self.api_wrapper_post_json_cookies(
-                url, json=loginform, headers=headers
-            )
-            if cookie is not None:
-                self._cookie = cookie
-            else:
-                cookie = await self.get_cookie_from_login(baseurl)
-                if cookie is not None:
-                    self._cookie = cookie
-
+        await self.get_cookie(baseurl)
         if self._cookie is not None:
             url = baseurl + "/service/ems-config/v1/current/" + str(self._system_id)
             headers = {"Cookie": f"{self._cookie.key}={self._cookie.value}"}
@@ -317,24 +339,7 @@ class FerroampApiClient(ApiClientBase):
         """Set data to the API."""
 
         baseurl = "https://portal.ferroamp.com"
-        self.check_cookie_expires()
-        if self._cookie is None:
-            loginform = {
-                "email": f"{self._email}",
-                "password": f"{self._password}",
-            }
-            headers = {"Content-Type": "application/json"}
-            url = baseurl + "/login"
-            cookie = await self.api_wrapper_post_json_cookies(
-                url, json=loginform, headers=headers
-            )
-            if cookie is not None:
-                self._cookie = cookie
-            else:
-                cookie = await self.get_cookie_from_login(baseurl)
-                if cookie is not None:
-                    self._cookie = cookie
-
+        await self.get_cookie(baseurl)
         if self._cookie is not None:
             url = (
                 baseurl + "/service/ems-config/v1/commands/set/" + str(self._system_id)
