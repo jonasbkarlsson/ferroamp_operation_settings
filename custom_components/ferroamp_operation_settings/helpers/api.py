@@ -245,7 +245,7 @@ class FerroampApiClient(ApiClientBase):
         return None
 
     async def get_cookie_from_login(self, baseurl: str):
-        """Get cookies"""
+        """Get access_token cookie"""
 
         cookie = None
         try:
