@@ -54,7 +54,7 @@ async def test_button(hass):
     assert isinstance(button_get_data, FerroampOperationSettingsButtonGetData)
     assert isinstance(button_update, FerroampOperationSettingsButtonUpdate)
 
-    # TODO: Test the butttons
+    # Test the butttons
     await button_get_data.async_press()
     await button_update.async_press()
 

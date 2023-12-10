@@ -1,6 +1,4 @@
 """Test ferroamp_operation_settings api."""
-from datetime import datetime
-from http.cookies import Morsel, SimpleCookie
 
 from custom_components.ferroamp_operation_settings.const import (
     CONF_LOGIN_EMAIL,
@@ -8,7 +6,6 @@ from custom_components.ferroamp_operation_settings.const import (
     CONF_SYSTEM_ID,
 )
 from custom_components.ferroamp_operation_settings.helpers.api import (
-    Cookie,
     FerroampApiClient,
 )
 
@@ -34,7 +31,7 @@ async def test_api_client(hass):
     )
 
     assert await api_client.async_get_data()
-    assert api_client._cookie is not None
+    assert api_client._access_token is not None
     assert api_client._data is not None
 
     body = {}
@@ -44,26 +41,6 @@ async def test_api_client(hass):
 
     assert await api_client.async_set_data(body)
 
-    # Remove cookie
-    api_client._cookie = None
+    # Remove access token
+    api_client._access_token = None
     assert await api_client.async_set_data(body)
-
-
-async def test_cookies(hass):
-    """Test cookies."""
-
-    cookies = None
-    assert Cookie.get_first_cookie(cookies) is None
-    cookies: SimpleCookie = SimpleCookie()
-    assert Cookie.get_first_cookie(cookies) is None
-    cookie: Morsel = Morsel()
-    cookie.set("access_token", "abcdef", None)
-    cookie["expires"] = "Sun, 12 Nov 2023 22:19:28 GMT"
-    cookies["access_token"] = cookie
-    assert Cookie.get_first_cookie(cookies) is not None
-    expires: datetime = Cookie.get_expires(cookie)
-    assert expires.year == 2023
-    assert expires.month == 11
-    assert expires.day == 12
-    assert expires.hour == 22
-    assert expires.minute == 19

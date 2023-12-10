@@ -1,15 +1,17 @@
 """API Client."""
 from copy import deepcopy
-from datetime import datetime, timedelta
-from http.cookies import Morsel, SimpleCookie
 import logging
 import asyncio
 import socket
+import time
 from typing import TypeVar
-from urllib.parse import urlencode
+from urllib.parse import urldefrag, urlencode, urlparse, parse_qs
+from uuid import uuid4
 import aiohttp
 import async_timeout
+from oauthlib.oauth2 import WebApplicationClient
 from pyquery import PyQuery as pq
+
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
@@ -17,25 +19,6 @@ HEADERS = {"Content-type": "application/json; charset=UTF-8"}
 TIMEOUT = 60
 
 _T = TypeVar("_T")
-
-
-class Cookie:
-    """Cookie class"""
-
-    @staticmethod
-    def get_first_cookie(cookies: SimpleCookie):
-        """Get the first cookie, if it exists."""
-        if cookies is None or len(cookies) == 0:
-            return None
-        return cookies[next(iter(cookies))]
-
-    @staticmethod
-    def get_expires(cookie: Morsel) -> datetime:
-        """Get the expire time for the cookie."""
-        date_string = cookie["expires"]
-        date_format = "%a, %d %b %Y %H:%M:%S %Z"
-        parsed_datetime: datetime.datetime = datetime.strptime(date_string, date_format)
-        return parsed_datetime
 
 
 class ApiClientBase:
@@ -56,6 +39,7 @@ class ApiClientBase:
         data: dict = {},
         json: dict = {},
         headers: dict = {},
+        allow_redirects: bool = True,
     ) -> dict:
         """Get information from the API."""
         try:
@@ -65,50 +49,40 @@ class ApiClientBase:
                     _LOGGER.debug("response.status = %s", response.status)
                     return await response.json()
 
+                elif method == "get":
+                    response = await self._session.get(
+                        url, headers=headers, allow_redirects=allow_redirects
+                    )
+                    _LOGGER.debug("response.status = %s", response.status)
+                    return response
+
                 elif method == "get_text":
-                    response = await self._session.get(url, headers=headers)
+                    response = await self._session.get(
+                        url, headers=headers, allow_redirects=allow_redirects
+                    )
                     _LOGGER.debug("response.status = %s", response.status)
                     return await response.text()
 
                 elif method == "post_json_text":
-                    response = await self._session.post(url, headers=headers, json=json)
+                    response = await self._session.post(
+                        url, headers=headers, json=json, allow_redirects=allow_redirects
+                    )
                     _LOGGER.debug("response.status = %s", response.status)
                     return await response.text()
+
+                elif method == "post_data":
+                    response = await self._session.post(
+                        url, headers=headers, data=data, allow_redirects=allow_redirects
+                    )
+                    _LOGGER.debug("response.status = %s", response.status)
+                    return response
 
                 elif method == "post_data_text":
-                    response = await self._session.post(url, headers=headers, data=data)
+                    response = await self._session.post(
+                        url, headers=headers, data=data, allow_redirects=allow_redirects
+                    )
                     _LOGGER.debug("response.status = %s", response.status)
                     return await response.text()
-
-                elif method == "post_json_cookies":
-                    response = await self._session.post(
-                        url,
-                        headers=headers,
-                        json=json,
-                        #                        ssl=False,
-                        allow_redirects=False,
-                    )
-                    _LOGGER.debug("response.status = %s", response.status)
-
-                    # Check if a cookie was returned
-                    if len(response.cookies) > 0:
-                        _LOGGER.debug("Cookies received.")
-                        # Access and print the cookies from the response
-                        # cookies = response.cookies
-                        # for key, value in cookies.items():
-                        #    print(f"Cookie - {key}: {value.value}")
-                        return Cookie.get_first_cookie(response.cookies)
-
-                    # Check in the cookie_jar
-                    for cookie in self._session.cookie_jar:
-                        if cookie.key == "access_token":
-                            _LOGGER.debug("Cookies received.")
-                            return cookie
-
-                    _LOGGER.debug(
-                        "Cookies NOT received. Status code = %s", response.status
-                    )
-                    return None
 
         except asyncio.TimeoutError as exception:
             _LOGGER.error(
@@ -144,10 +118,16 @@ class ApiClientBase:
         data: dict = {},
         json: dict = {},
         headers: dict = {},
+        allow_redirects: bool = True,
     ):
         """API wrapper for get_json"""
         return await self.api_wrapper(
-            method="get_json", url=url, data=data, json=json, headers=headers
+            method="get_json",
+            url=url,
+            data=data,
+            json=json,
+            headers=headers,
+            allow_redirects=allow_redirects,
         )
 
     async def api_wrapper_get_text(  # pylint: disable=dangerous-default-value
@@ -156,10 +136,34 @@ class ApiClientBase:
         data: dict = {},
         json: dict = {},
         headers: dict = {},
+        allow_redirects: bool = True,
     ):
         """API wrapper for get_json"""
         return await self.api_wrapper(
-            method="get_text", url=url, data=data, json=json, headers=headers
+            method="get_text",
+            url=url,
+            data=data,
+            json=json,
+            headers=headers,
+            allow_redirects=allow_redirects,
+        )
+
+    async def api_wrapper_get(  # pylint: disable=dangerous-default-value
+        self,
+        url: str,
+        data: dict = {},
+        json: dict = {},
+        headers: dict = {},
+        allow_redirects: bool = True,
+    ):
+        """API wrapper for get_json"""
+        return await self.api_wrapper(
+            method="get",
+            url=url,
+            data=data,
+            json=json,
+            headers=headers,
+            allow_redirects=allow_redirects,
         )
 
     async def api_wrapper_post_json_text(  # pylint: disable=dangerous-default-value
@@ -168,10 +172,16 @@ class ApiClientBase:
         data: dict = {},
         json: dict = {},
         headers: dict = {},
+        allow_redirects: bool = True,
     ):
         """API wrapper for post_json_text"""
         return await self.api_wrapper(
-            method="post_json_text", url=url, data=data, json=json, headers=headers
+            method="post_json_text",
+            url=url,
+            data=data,
+            json=json,
+            headers=headers,
+            allow_redirects=allow_redirects,
         )
 
     async def api_wrapper_post_data_text(  # pylint: disable=dangerous-default-value
@@ -180,22 +190,34 @@ class ApiClientBase:
         data: dict = {},
         json: dict = {},
         headers: dict = {},
+        allow_redirects: bool = True,
     ):
         """API wrapper for post_json_text"""
         return await self.api_wrapper(
-            method="post_data_text", url=url, data=data, json=json, headers=headers
+            method="post_data_text",
+            url=url,
+            data=data,
+            json=json,
+            headers=headers,
+            allow_redirects=allow_redirects,
         )
 
-    async def api_wrapper_post_json_cookies(  # pylint: disable=dangerous-default-value
+    async def api_wrapper_post_data(  # pylint: disable=dangerous-default-value
         self,
         url: str,
         data: dict = {},
         json: dict = {},
         headers: dict = {},
+        allow_redirects: bool = True,
     ):
-        """API wrapper for post_json_cookies"""
+        """API wrapper for post_json_text"""
         return await self.api_wrapper(
-            method="post_json_cookies", url=url, data=data, json=json, headers=headers
+            method="post_data",
+            url=url,
+            data=data,
+            json=json,
+            headers=headers,
+            allow_redirects=allow_redirects,
         )
 
 
@@ -210,122 +232,242 @@ class FerroampApiClient(ApiClientBase):
         self._system_id = system_id
         self._email = email
         self._password = password
-        self._cookie = None
+        self.oauth2client = WebApplicationClient(
+            "portal-first-gen", scope="openid", code_challenge_method="S256"
+        )
+        self._tokens = None
+        self._access_token = None
         self._data = None
 
-    def check_cookie_expires(self):
-        """Check if the cookie is about to expire"""
-        if self._cookie is not None:
-            _LOGGER.debug("Cookie expires = %s", Cookie.get_expires(self._cookie))
-            expires = Cookie.get_expires(self._cookie)  # Assumes time is UTC
-            now = datetime.utcnow()
-            delta = expires - now
-            margin = timedelta(seconds=60)
-            if delta < margin:
-                _LOGGER.debug("Cookie expires soon.")
-                self._cookie = None
+    async def get_new_tokens(self) -> None:
+        """Get new access token and refresh token"""
 
-    def get_all_cookies(self) -> {}:
+        openid_baseurl = (
+            "https://auth.eu.prod.ferroamp.com/realms/public/protocol/openid-connect"
+        )
+        portal_baseurl = "https://portal.ferroamp.com"
+
+        nonce: str = str(uuid4())
+        state: str = str(uuid4())
+        session_state = None
+        code = None
+        authorization_code = None
+        code_verifier = self.oauth2client.create_code_verifier(88)
+        code_challenge = self.oauth2client.create_code_challenge(
+            code_verifier, self.oauth2client.code_challenge_method
+        )
+        self.oauth2client.client_id = "portal-first-gen"
+
+        ###### Get the login URL ################################################
+        if self._session and self._session.cookie_jar:
+            self._session.cookie_jar.clear()
+        body = await self.api_wrapper_get_text(url=portal_baseurl)
+        _LOGGER.debug("get_new_tokens: After first GET.")
+        d = pq(body)
+        action = d("form").attr("action")
+
+        ##### Login the user #################################
+        #
+        ## Get "sesson_state" and "code"
+
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        body_dict = {
+            "username": f"{self._email}",
+            "password": f"{self._password}",
+        }
+        body = urlencode(body_dict)
+        headers["Cookie"] = self.get_all_cookies()
+        _LOGGER.debug("get_new_tokens: Before first POST.")
+        response = await self.api_wrapper_post_data(
+            url=action, headers=headers, data=body
+        )
+        _LOGGER.debug("get_new_tokens: After first POST.")
+        if response.status != 200:
+            _LOGGER.error("Failed to receive code")
+            return None
+        url = str(response.real_url)
+        query_params = self.oauth2client.parse_request_uri_response(url)
+        for key, value in query_params.items():
+            if key == "session_state":
+                session_state = value
+            if key == "code":
+                code = value
+        if session_state is None or code is None:
+            _LOGGER.error("Failed to receive session_state and code")
+            return None
+
+        ##### Authorization Code Request ##################################
+        #
+        ## Get the "code" for authorization
+
+        redirect_uri = f"{portal_baseurl}/app?session_state={session_state}&code={code}"
+        self.oauth2client.client_id = "portal-frontend-ng-production"
+        uri = self.oauth2client.prepare_request_uri(
+            openid_baseurl + "/auth",
+            redirect_uri=redirect_uri,
+            state=state,
+            code_challenge=code_challenge,
+            code_challenge_method=self.oauth2client.code_challenge_method,
+            response_mode="fragment",
+            nonce=nonce,
+        )
+        headers = {}
+        headers["Cookie"] = self.get_all_cookies()
+        _LOGGER.debug("get_new_tokens: Before second GET.")
+        response = await self.api_wrapper_get(
+            url=uri, headers=headers, allow_redirects=False
+        )
+        _LOGGER.debug("get_new_tokens: After second GET.")
+        if response.status != 302:
+            _LOGGER.error("Failed to receive code")
+            return None
+
+        url = response.headers["Location"]
+        parsed_url = urlparse(url)
+        fragment = parsed_url.fragment
+        fragment_params = parse_qs(fragment)
+
+        for key, value in fragment_params.items():
+            if key == "code":
+                authorization_code = value[0]
+
+        if authorization_code is None:
+            _LOGGER.error("Failed to receive authorization code")
+            return None
+
+        headers = {}
+        headers["Cookie"] = self.get_all_cookies()
+        uri = urldefrag(response.headers["Location"])[0]
+        _LOGGER.debug("get_new_tokens: Before third GET.")
+        response = await self.api_wrapper_get(
+            url=uri, headers=headers, allow_redirects=False
+        )
+        _LOGGER.debug("get_new_tokens: After third GET.")
+        if response.status != 304 and response.status != 200:
+            _LOGGER.error("Failed to receive code")
+            return None
+
+        ##### Access Token Request ###########################################
+        #
+        ## Get "access_token" and "refresh token", and their expiration times
+
+        body = self.oauth2client.prepare_request_body(
+            code=authorization_code,
+            redirect_uri=redirect_uri,
+            body="",
+            include_client_id=True,
+            code_verifier=code_verifier,
+        )
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        headers["Cookie"] = self.get_all_cookies()
+        url = openid_baseurl + "/token"
+        _LOGGER.debug("get_new_tokens: Before second POST.")
+        response = await self.api_wrapper_post_data(url=url, headers=headers, data=body)
+        _LOGGER.debug("get_new_tokens: After second POST.")
+        if response.status != 200:
+            _LOGGER.error("Failed to receive tokens")
+            return None
+
+        body = await response.text()
+        tokens = {}
+        try:
+            tokens = self.oauth2client.parse_request_body_response(
+                body, "openid legacy-portal-id profile email"
+            )
+            self._tokens = tokens
+            self._access_token = tokens["access_token"]
+            _LOGGER.debug("get_new_tokens: New tokens received.")
+        except Exception as exception:  # pylint: disable=broad-except
+            _LOGGER.error(
+                "get_new_tokens: Could not read token information - %s", exception
+            )
+
+        return None
+
+    def get_all_cookies(self) -> str:
         """Get all cookies from the cookie jar."""
         cookies = {}
         for cookie in self._session.cookie_jar:
             if cookie["domain"].endswith("ferroamp.com"):
                 cookies[f"{cookie.key}"] = {
-                    "key": f"{cookie.key}",
-                    "value": f"{cookie.value}",
+                    "key": f"{str(cookie.key)}",
+                    "value": f"{str(cookie.value)}",
                 }
-        return cookies
 
-    def get_cookie_from_jar(self, key: str) -> Morsel | None:
-        """Get one cookie from the cookie jar."""
-        for cookie in self._session.cookie_jar:
-            if cookie["domain"].endswith("ferroamp.com"):
-                if cookie.key == key:
-                    return cookie
-        return None
+        cookie_header = "; ".join(
+            [
+                f"{cookie_data['key']}={cookie_data['value']}"
+                for cookie_data in cookies.values()
+            ]
+        )
+        return cookie_header
 
-    async def get_cookie_from_login(self, baseurl: str):
-        """Get access_token cookie"""
+    async def get_access_token(self) -> None:
+        """Make sure we have a valid access token."""
 
-        cookie = None
-        try:
-            _LOGGER.debug("get_cookie_from_login: Before GET.")
-            body = await self.api_wrapper_get_text(url=baseurl)
-            _LOGGER.debug("get_cookie_from_login: After GET.")
+        current_time = time.time()
 
-            d = pq(body)
-            action = d("form").attr("action")
-            headers = {"Content-Type": "application/x-www-form-urlencoded"}
-            body_dict = {
-                "username": f"{self._email}",
-                "password": f"{self._password}",
-            }
-            body = urlencode(body_dict)
-            headers["Cookie"] = self.get_all_cookies()
-            _LOGGER.debug("get_cookie_from_login: Before first POST.")
-            response = await self.api_wrapper_post_data_text(
-                url=action, headers=headers, data=body
+        if self._access_token is None:
+            # No Token
+            await self.get_new_tokens()
+            return self._access_token
+        elif (
+            self._access_token
+            and self._tokens
+            and self._tokens["expires_at"] - current_time < 30
+        ):
+            # Token is about to expire, so refresh it
+            # pylint: disable=line-too-long
+            openid_baseurl = "https://auth.eu.prod.ferroamp.com/realms/public/protocol/openid-connect"
+            token_url = openid_baseurl + "/token"
+            url, headers, body = self.oauth2client.prepare_refresh_token_request(
+                token_url,
+                refresh_token=self._tokens["refresh_token"],
+                body="",
+                scope=None,
+                client_id="portal-frontend-ng-production",
             )
-            _LOGGER.debug("get_cookie_from_login: After first POST.")
-
-            d = pq(response)
-            action = d("form").attr("action")
-            input_all = d("form").find("input")
-            body_dict = {}
-            for input_one in input_all:
-                body_dict[input_one.name] = input_one.value
-            body = urlencode(body_dict)
-            headers = {"Content-Type": "application/x-www-form-urlencoded"}
-            headers["Cookie"] = self.get_all_cookies()
-
-            _LOGGER.debug("get_cookie_from_login: Before second POST.")
-            response = await self.api_wrapper_post_data_text(
-                url=action, headers=headers, data=body
+            _LOGGER.debug("get_access_token: Before first POST.")
+            response = await self.api_wrapper_post_data(
+                url=url, headers=headers, data=body
             )
-            _LOGGER.debug("get_cookie_from_login: After second POST.")
+            _LOGGER.debug("get_access_token: After first POST.")
+            if response.status != 200:
+                _LOGGER.debug("Failed to refresh token. Get new tokens instead.")
+                self._access_token = None
+                await self.get_new_tokens()
+                return self._access_token
 
-            cookie = self.get_cookie_from_jar("access_token")
-            if cookie:
-                _LOGGER.debug("get_cookie_from_login: Cookie found.")
-            else:
-                _LOGGER.debug("get_cookie_from_login: No cookie found.")
-
-        except Exception as exception:  # pylint: disable=broad-except
-            _LOGGER.debug(
-                "get_cookie_from_login: Something wrong happened! - %s", exception
-            )
-
-        return cookie
-
-    async def get_cookie(self, baseurl: str):
-        """Make sure we have a valid cookie."""
-
-        self.check_cookie_expires()
-        if self._cookie is None:
-            cookie = await self.get_cookie_from_login(baseurl)
-            if cookie is not None:
-                self._cookie = cookie
-            else:
-                loginform = {
-                    "email": f"{self._email}",
-                    "password": f"{self._password}",
-                }
-                headers = {"Content-Type": "application/json"}
-                url = baseurl + "/login"
-                cookie = await self.api_wrapper_post_json_cookies(
-                    url, json=loginform, headers=headers
+            body = await response.text()
+            tokens = {}
+            try:
+                tokens = self.oauth2client.parse_request_body_response(
+                    body, "openid legacy-portal-id profile email"
                 )
-                if cookie is not None:
-                    self._cookie = cookie
+                self._tokens = tokens
+                self._access_token = tokens["access_token"]
+                _LOGGER.debug("get_access_token: Tokens refreshed.")
+            except Exception as exception:  # pylint: disable=broad-except
+                _LOGGER.error(
+                    "get_access_token: Could not read token information - %s", exception
+                )
+        else:
+            # Token still valid
+            _LOGGER.debug("get_access_token: Tokens still valid.")
+        return self._access_token
 
     async def async_get_data(self) -> dict:
         """Get data from the API."""
 
-        baseurl = "https://portal.ferroamp.com"
-        await self.get_cookie(baseurl)
-        if self._cookie is not None:
-            url = baseurl + "/service/ems-config/v1/current/" + str(self._system_id)
-            headers = {"Cookie": f"{self._cookie.key}={self._cookie.value}"}
+        portal_baseurl = "https://portal.ferroamp.com"
+        self._access_token = await self.get_access_token()
+        if self._access_token is not None:
+            url = (
+                portal_baseurl
+                + "/service/ems-config/v1/current/"
+                + str(self._system_id)
+            )
+            headers = {"Authorization": "Bearer " + self._access_token}
             _LOGGER.debug("url = %s", url)
             data_ferroamp = await self.api_wrapper_get_json(url, headers=headers)
             self._data = deepcopy(data_ferroamp)
@@ -338,15 +480,17 @@ class FerroampApiClient(ApiClientBase):
     async def async_set_data(self, body: dict) -> bool:
         """Set data to the API."""
 
-        baseurl = "https://portal.ferroamp.com"
-        await self.get_cookie(baseurl)
-        if self._cookie is not None:
+        portal_baseurl = "https://portal.ferroamp.com"
+        self._access_token = await self.get_access_token()
+        if self._access_token is not None:
             url = (
-                baseurl + "/service/ems-config/v1/commands/set/" + str(self._system_id)
+                portal_baseurl
+                + "/service/ems-config/v1/commands/set/"
+                + str(self._system_id)
             )
             headers = {
                 "Content-Type": "application/json",
-                "Cookie": f"{self._cookie.key}={self._cookie.value}",
+                "Authorization": "Bearer " + self._access_token,
             }
             _LOGGER.debug("url = %s", url)
             _LOGGER.debug("headers = %s", headers)
