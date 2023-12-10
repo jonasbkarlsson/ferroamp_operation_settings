@@ -253,19 +253,27 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
         body["payload"]["battery"] = {}
         body["payload"]["battery"]["powerRef"] = {}
 
-        if self.select_battery_power_mode == BATTERY_DISCHARGE:
+        if self.select_mode.current_option == MODE_DEFAULT:
+            if self.select_battery_power_mode.current_option == BATTERY_DISCHARGE:
+                body["payload"]["battery"]["powerRef"][
+                    "discharge"
+                ] = self.number_discharge_reference.value
+            else:
+                body["payload"]["battery"]["powerRef"]["discharge"] = 0
+
+            if self.select_battery_power_mode.current_option == BATTERY_CHARGE:
+                body["payload"]["battery"]["powerRef"][
+                    "charge"
+                ] = self.number_charge_reference.value
+            else:
+                body["payload"]["battery"]["powerRef"]["charge"] = 0
+        else:
             body["payload"]["battery"]["powerRef"][
                 "discharge"
             ] = self.number_discharge_reference.value
-        else:
-            body["payload"]["battery"]["powerRef"]["discharge"] = 0
-
-        if self.select_battery_power_mode == BATTERY_CHARGE:
             body["payload"]["battery"]["powerRef"][
                 "charge"
             ] = self.number_charge_reference.value
-        else:
-            body["payload"]["battery"]["powerRef"]["charge"] = 0
 
         body["payload"]["battery"]["socRef"] = {}
         body["payload"]["battery"]["socRef"]["high"] = self.number_upper_reference.value
