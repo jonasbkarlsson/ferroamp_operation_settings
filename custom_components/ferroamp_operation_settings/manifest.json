@@ -11,7 +11,7 @@
   "issue_tracker": "https://github.com/jonasbkarlsson/ferroamp_operation_settings/issues",
   "requirements": [
     "pyquery>=2.0.0",
-    "requests_oauthlib>=1.3.1"
+    "oauthlib>=3.2.2"
   ],
   "version": "0.1.0"
 }
