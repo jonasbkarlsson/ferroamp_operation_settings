@@ -14,7 +14,6 @@
 #
 # See here for more info: https://docs.pytest.org/en/latest/fixture.html (note that
 # pytest includes fixtures OOB which you can use as defined on this page)
-from http.cookies import SimpleCookie
 from unittest.mock import patch
 import pytest
 
@@ -98,25 +97,37 @@ def mock_api_wrapper_get_json_fixture():
         yield
 
 
-class MockResponse:
-    """Mock class for Response"""
+# class MockResponse:
+#     """Mock class for Response"""
 
-    cookies: SimpleCookie[str] = SimpleCookie()
+#     cookies: SimpleCookie[str] = SimpleCookie()
+
+
+# # This fixture prevent Home Assistant to access internet.
+# @pytest.fixture(name="mock_api_wrapper_post_json_cookies", autouse=True)
+# def mock_api_wrapper_post_json_cookies_fixture():
+#     """Mock api_wrapper_post_json_cookies()."""
+
+#     response: MockResponse = MockResponse()
+#     response.cookies["access_token"] = SimpleCookie()
+#     response.cookies["access_token"].set("access_token", "abcdef12345", "")
+#     response.cookies["access_token"]["expires"] = "Sun, 12 Nov 2023 22:19:28 GMT"
+
+#     with patch(
+#         "custom_components.ferroamp_operation_settings.helpers.api.ApiClientBase.api_wrapper_post_json_cookies",
+#         return_value=response.cookies["access_token"],
+#     ):
+#         yield
 
 
 # This fixture prevent Home Assistant to access internet.
-@pytest.fixture(name="mock_api_wrapper_post_json_cookies", autouse=True)
-def mock_api_wrapper_post_json_cookies_fixture():
-    """Mock api_wrapper_post_json_cookies()."""
-
-    response: MockResponse = MockResponse()
-    response.cookies["access_token"] = SimpleCookie()
-    response.cookies["access_token"].set("access_token", "abcdef12345", "")
-    response.cookies["access_token"]["expires"] = "Sun, 12 Nov 2023 22:19:28 GMT"
+@pytest.fixture(name="mock_get_access_token", autouse=True)
+def mock_get_access_token_fixture():
+    """Mock get_access_token()."""
 
     with patch(
-        "custom_components.ferroamp_operation_settings.helpers.api.ApiClientBase.api_wrapper_post_json_cookies",
-        return_value=response.cookies["access_token"],
+        "custom_components.ferroamp_operation_settings.helpers.api.FerroampApiClient.get_access_token",
+        return_value="123456",
     ):
         yield
 
@@ -133,21 +144,21 @@ def mock_api_wrapper_post_json_text_fixture():
         yield
 
 
-# This fixture prevent Home Assistant to access internet.
-@pytest.fixture(name="mock_get_cookie_from_login", autouse=True)
-def mock_get_cookie_from_login_fixture():
-    """Mock get_cookie_from_login()."""
+# # This fixture prevent Home Assistant to access internet.
+# @pytest.fixture(name="mock_get_cookie_from_login", autouse=True)
+# def mock_get_cookie_from_login_fixture():
+#     """Mock get_cookie_from_login()."""
 
-    response: MockResponse = MockResponse()
-    response.cookies["access_token"] = SimpleCookie()
-    response.cookies["access_token"].set("access_token", "abcdef12345", "")
-    response.cookies["access_token"]["expires"] = "Sun, 12 Nov 2023 22:19:28 GMT"
+#     response: MockResponse = MockResponse()
+#     response.cookies["access_token"] = SimpleCookie()
+#     response.cookies["access_token"].set("access_token", "abcdef12345", "")
+#     response.cookies["access_token"]["expires"] = "Sun, 12 Nov 2023 22:19:28 GMT"
 
-    with patch(
-        "custom_components.ferroamp_operation_settings.helpers.api.FerroampApiClient.get_cookie_from_login",
-        return_value=response.cookies["access_token"],
-    ):
-        yield
+#     with patch(
+#         "custom_components.ferroamp_operation_settings.helpers.api.FerroampApiClient.get_cookie_from_login",
+#         return_value=response.cookies["access_token"],
+#     ):
+#         yield
 
 
 # This fixture is used to prevent HomeAssistant from calling async_call_later_local().
