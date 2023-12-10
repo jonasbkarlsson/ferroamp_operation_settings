@@ -14,6 +14,8 @@ The Ferroamp Operation Settings integration implements the Operation Settings in
 
 NOTE: The integration uses parts of version v1 of the Ferroamp Portal API. If the API is changed, this integration might stop working.
 
+NOTE 2: If Ferroamp in the future will provide a local API for the operation settings, this integration will be updated to use that instead of the Portal API.
+
 ## Requirements
 - Home Assistant version 2023.3 or newer.
 
