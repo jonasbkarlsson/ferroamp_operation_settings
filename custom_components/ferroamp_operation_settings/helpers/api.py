@@ -1,5 +1,6 @@
 """API Client."""
 from copy import deepcopy
+from json import dumps as json_dumps
 import logging
 import asyncio
 import socket
@@ -368,11 +369,11 @@ class FerroampApiClient(ApiClientBase):
             _LOGGER.error("Failed to receive tokens")
             return None
 
-        body = await response.text()
-        tokens = {}
+        json_data = await response.json()
+        json_data["scope"] = "openid"
         try:
             tokens = self.oauth2client.parse_request_body_response(
-                body, "openid legacy-portal-id profile email"
+                json_dumps(json_data), "openid"
             )
             self._tokens = tokens
             self._access_token = tokens["access_token"]
@@ -438,11 +439,11 @@ class FerroampApiClient(ApiClientBase):
                 await self.get_new_tokens()
                 return self._access_token
 
-            body = await response.text()
-            tokens = {}
+            json_data = await response.json()
+            json_data["scope"] = "openid"
             try:
                 tokens = self.oauth2client.parse_request_body_response(
-                    body, "openid legacy-portal-id profile email"
+                    json_dumps(json_data), "openid"
                 )
                 self._tokens = tokens
                 self._access_token = tokens["access_token"]
