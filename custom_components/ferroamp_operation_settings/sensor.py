@@ -41,12 +41,6 @@ class FerroampOperationSettingsSensor(FerroampOperationSettingsEntity, SensorEnt
         id_name = self._attr_name.replace(" ", "").lower()
         self._attr_unique_id = ".".join([entry.entry_id, SENSOR, id_name])
 
-    @SensorEntity.native_value.setter
-    def native_value(self, new_value):
-        """Set the value reported by the sensor."""
-        self._attr_native_value = new_value
-        self.update_ha_state()
-
 
 class FerroampOperationSettingsSensorStatus(FerroampOperationSettingsSensor):
     """Ferroamp Operation Settings sensor class."""
@@ -60,3 +54,8 @@ class FerroampOperationSettingsSensorStatus(FerroampOperationSettingsSensor):
         self.coordinator.sensor_status = self
 
         self._attr_native_value = STATUS_READY
+
+    def set_status(self, new_status):
+        """Set new status."""
+        self._attr_native_value = new_status
+        self.update_ha_state()

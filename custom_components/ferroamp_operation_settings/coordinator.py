@@ -224,7 +224,7 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
         self, date_time: datetime = None
     ):  # pylint: disable=unused-argument
         """Set status to Ready"""
-        self.sensor_status.native_value = STATUS_READY
+        self.sensor_status.set_status(STATUS_READY)
 
     async def get_data(self):
         """Get configuration from Ferroamp system and updated entities"""
@@ -232,10 +232,10 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
         await self.async_refresh()
         if self.last_update_success:
             await self.update_entities()
-            self.sensor_status.native_value = STATUS_SUCCESS
+            self.sensor_status.set_status(STATUS_SUCCESS)
             self.async_call_later_local(self.hass, 7.0, self.set_status_ready)
         else:
-            self.sensor_status.native_value = STATUS_FAILED
+            self.sensor_status.set_status(STATUS_FAILED)
             _LOGGER.error("Get Data failed.")
         _LOGGER.debug("get_data() ends")
 
@@ -318,9 +318,9 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
         _LOGGER.debug("body = %s", str(body))
         update_ok = await self.api.async_set_data(body)
         if update_ok:
-            self.sensor_status.native_value = STATUS_SUCCESS
+            self.sensor_status.set_status(STATUS_SUCCESS)
             self.async_call_later_local(self.hass, 7.0, self.set_status_ready)
             _LOGGER.debug("update() OK")
         else:
-            self.sensor_status.native_value = STATUS_FAILED
+            self.sensor_status.set_status(STATUS_FAILED)
             _LOGGER.error("Update failed.")
