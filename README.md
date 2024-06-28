@@ -414,12 +414,12 @@ action:
     target:
       entity_id: number.ferroamp_operation_settings_import_threshold
     data:
-      value: "4000"
+      value: "0"
   - service: number.set_value
     target:
       entity_id: number.ferroamp_operation_settings_export_threshold
     data:
-      value: "3000"
+      value: "0"
   - service: button.press
     target:
       entity_id: button.ferroamp_operation_settings_update
