@@ -1,4 +1,5 @@
 """Number platform for Ferroamp Operation Settings."""
+
 import logging
 from typing import Union
 
@@ -254,7 +255,7 @@ class FerroampOperationSettingsNumberLowerReference(FerroampOperationSettingsNum
 
     _attr_name = ENTITY_NAME_LOWER_REFERENCE_NUMBER
     _attr_entity_category = EntityCategory.CONFIG
-    _attr_native_min_value = 0
+    _attr_native_min_value = 5.0
     _attr_native_max_value = 100.0
     _attr_native_step = 0.1
     _attr_unit_of_measurement = "%"
@@ -278,7 +279,7 @@ class FerroampOperationSettingsNumberUpperReference(FerroampOperationSettingsNum
 
     _attr_name = ENTITY_NAME_UPPER_REFERENCE_NUMBER
     _attr_entity_category = EntityCategory.CONFIG
-    _attr_native_min_value = 0
+    _attr_native_min_value = 5.0
     _attr_native_max_value = 100.0
     _attr_native_step = 0.1
     _attr_unit_of_measurement = "%"
