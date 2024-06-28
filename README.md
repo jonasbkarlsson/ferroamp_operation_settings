@@ -65,8 +65,8 @@ Mode | Select |Selects one of the operation modes `Default`, `Peak Shaving` or `
 PV | Switch | Enables PV strings.
 ACE threshold | Number | Current threshold for the ACE function. Valid values min=0.0, step=0.1, max=100.0. Unit "A".
 ACE | Switch | Enable current equalization (ACE) when current in any Mains phase exceeds the ACE threshold.
-Lower Reference | Number | Battery state-of-charge (SoC), below which it is not allowed to discharge battery. Valid values min=0.0, step=0.1, max=100.0. Unit "%".
-Upper Reference | Number | Battery state-of-charge (SoC), above which it is not allowed to charge battery. Valid values min=0.0, step=0.1, max=100.0. Unit "%".
+Lower Reference | Number | Battery state-of-charge (SoC), below which it is not allowed to discharge battery. Valid values min=5.0, step=0.1, max=100.0. Unit "%".
+Upper Reference | Number | Battery state-of-charge (SoC), above which it is not allowed to charge battery. Valid values min=5.0, step=0.1, max=100.0. Unit "%".
 Get Data | Button | Reads the current configuration from the Ferroamp system and sets the values of all the entities.
 Update | Button | Writes the values of all entities to the Ferroamp system.
 Status | Sensor | One of `Ready`, `Success` and `Failed`. After a successful `Get Data` or `Update`, the status will be shown as `Success` for a short while and then change back to `Ready`. Note that a successful `Update` means that the communication with the Ferroamp Portal was successful. It does not guarantee that the EnergyHub settings were successfully updated by the portal.
