@@ -1,4 +1,5 @@
 """API Client."""
+
 from copy import deepcopy
 from json import dumps as json_dumps
 import logging
@@ -284,6 +285,7 @@ class FerroampApiClient(ApiClientBase):
         )
         _LOGGER.debug("get_new_tokens: After first POST.")
         if response.status != 200:
+            _LOGGER.error("Username and/or password is incorrect")
             _LOGGER.error("Failed to receive code")
             return None
         url = str(response.real_url)
@@ -294,6 +296,7 @@ class FerroampApiClient(ApiClientBase):
             if key == "code":
                 code = value
         if session_state is None or code is None:
+            _LOGGER.error("Username and/or password is incorrect")
             _LOGGER.error("Failed to receive session_state and code")
             return None
 
@@ -320,6 +323,7 @@ class FerroampApiClient(ApiClientBase):
         )
         _LOGGER.debug("get_new_tokens: After second GET.")
         if response.status != 302:
+            _LOGGER.error("Username and password are correct")
             _LOGGER.error("Failed to receive code")
             return None
 
@@ -328,11 +332,36 @@ class FerroampApiClient(ApiClientBase):
         fragment = parsed_url.fragment
         fragment_params = parse_qs(fragment)
 
+        if len(fragment_params) == 0:
+            # Sometimes, the authorization code is not received on the first attempt.
+            headers = {}
+            headers["Cookie"] = self.get_all_cookies()
+            uri = urldefrag(response.headers["Location"])[0]
+            _LOGGER.debug("get_new_tokens: Before required action GET.")
+            response = await self.api_wrapper_get(
+                url=uri, headers=headers, allow_redirects=False
+            )
+            _LOGGER.debug("get_new_tokens: After required action GET.")
+            if response.status != 302:
+                _LOGGER.error("Username and password are correct")
+                _LOGGER.error("Failed to receive code")
+                return None
+
+            url = response.headers["Location"]
+            parsed_url = urlparse(url)
+            fragment = parsed_url.fragment
+            fragment_params = parse_qs(fragment)
+            if len(fragment_params) == 0:
+                _LOGGER.error("Username and password are correct")
+                _LOGGER.error("Failed to receive authorization code")
+                return None
+
         for key, value in fragment_params.items():
             if key == "code":
                 authorization_code = value[0]
 
         if authorization_code is None:
+            _LOGGER.error("Username and password are correct")
             _LOGGER.error("Failed to receive authorization code")
             return None
 
@@ -345,7 +374,8 @@ class FerroampApiClient(ApiClientBase):
         )
         _LOGGER.debug("get_new_tokens: After third GET.")
         if response.status != 304 and response.status != 200:
-            _LOGGER.error("Failed to receive code")
+            _LOGGER.error("Username and password are correct")
+            _LOGGER.error("Failed to receive authorization code")
             return None
 
         ##### Access Token Request ###########################################
@@ -366,6 +396,8 @@ class FerroampApiClient(ApiClientBase):
         response = await self.api_wrapper_post_data(url=url, headers=headers, data=body)
         _LOGGER.debug("get_new_tokens: After second POST.")
         if response.status != 200:
+            _LOGGER.error("Username and password are correct")
+            _LOGGER.error("Received authorization code")
             _LOGGER.error("Failed to receive tokens")
             return None
 
@@ -379,6 +411,8 @@ class FerroampApiClient(ApiClientBase):
             self._access_token = tokens["access_token"]
             _LOGGER.debug("get_new_tokens: New tokens received.")
         except Exception as exception:  # pylint: disable=broad-except
+            _LOGGER.error("Username and password are correct")
+            _LOGGER.error("Received authorization code")
             _LOGGER.error(
                 "get_new_tokens: Could not read token information - %s", exception
             )
