@@ -263,10 +263,33 @@ class FerroampApiClient(ApiClientBase):
         ###### Get the login URL ################################################
         if self._session and self._session.cookie_jar:
             self._session.cookie_jar.clear()
-        body = await self.api_wrapper_get_text(url=portal_baseurl)
+        body = await self.api_wrapper_get_text(
+            url=portal_baseurl, allow_redirects=False
+        )
         _LOGGER.debug("get_new_tokens: After first GET.")
         d = pq(body)
         action = d("form").attr("action")
+
+        if not action:
+            redirect_uri = f"{portal_baseurl}/"
+            self.oauth2client.client_id = "portal-frontend-ng-production"
+            uri = self.oauth2client.prepare_request_uri(
+                openid_baseurl + "/auth",
+                redirect_uri=redirect_uri,
+                state=state,
+                code_challenge=code_challenge,
+                code_challenge_method=self.oauth2client.code_challenge_method,
+                response_mode="fragment",
+                nonce=nonce,
+            )
+            headers = {}
+            headers["Cookie"] = self.get_all_cookies()
+            body = await self.api_wrapper_get_text(
+                url=uri, headers=headers, allow_redirects=False
+            )
+            _LOGGER.debug("get_new_tokens: After first GET, attempt 2.")
+            d = pq(body)
+            action = d("form").attr("action")
 
         ##### Login the user #################################
         #
@@ -289,12 +312,25 @@ class FerroampApiClient(ApiClientBase):
             _LOGGER.error("Failed to receive code")
             return None
         url = str(response.real_url)
-        query_params = self.oauth2client.parse_request_uri_response(url)
-        for key, value in query_params.items():
-            if key == "session_state":
-                session_state = value
-            if key == "code":
-                code = value
+        try:
+            # Try using oauth2client.parse_request_uri_response()
+            query_params = self.oauth2client.parse_request_uri_response(url)
+            for key, value in query_params.items():
+                if key == "session_state":
+                    session_state = value
+                if key == "code":
+                    code = value
+        except Exception:  # pylint: disable=broad-except
+            # Try using urlparse()
+            parsed_url = urlparse(url)
+            fragment = parsed_url.fragment
+            fragment_params = parse_qs(fragment)
+            for key, value in fragment_params.items():
+                if key == "session_state":
+                    session_state = value[0]
+                if key == "code":
+                    code = value[0]
+
         if session_state is None or code is None:
             _LOGGER.error("Username and/or password is incorrect")
             _LOGGER.error("Failed to receive session_state and code")
