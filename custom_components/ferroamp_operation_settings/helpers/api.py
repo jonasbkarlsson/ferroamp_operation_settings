@@ -323,6 +323,11 @@ class FerroampApiClient(ApiClientBase):
         except Exception:  # pylint: disable=broad-except
             # Try using urlparse()
             parsed_url = urlparse(url)
+            if parsed_url.path == "/realms/public/login-actions/required-action":
+                _LOGGER.error(
+                    "Extra action needed. Please login using a web browser once."
+                )
+                return None
             fragment = parsed_url.fragment
             fragment_params = parse_qs(fragment)
             for key, value in fragment_params.items():
