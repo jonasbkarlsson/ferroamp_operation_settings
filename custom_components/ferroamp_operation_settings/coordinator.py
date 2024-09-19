@@ -132,8 +132,10 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
         self,
         hass: HomeAssistant,
         delay: float | timedelta,
-        action: HassJob[[datetime], Coroutine[Any, Any, None] | None]
-        | Callable[[datetime], Coroutine[Any, Any, None] | None],
+        action: (
+            HassJob[[datetime], Coroutine[Any, Any, None] | None]
+            | Callable[[datetime], Coroutine[Any, Any, None] | None]
+        ),
     ) -> CALLBACK_TYPE:
         """
         Add a listener that is called in <delay>.
@@ -153,6 +155,10 @@ class FerroampOperationSettingsCoordinator(DataUpdateCoordinator):
     ):  # pylint: disable=unused-argument
         """Update entities"""
         _LOGGER.debug("update_entities() starts")
+
+        if not self.data:
+            _LOGGER.error("update_entities() no data!")
+            return
 
         if self.data["emsConfig"]["data"]["mode"] == 2:
             await self.select_mode.async_select_option(MODE_PEAK_SHAVING)
