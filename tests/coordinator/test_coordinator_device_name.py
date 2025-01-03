@@ -2,6 +2,8 @@
 
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from homeassistant.const import MAJOR_VERSION, MINOR_VERSION
+from homeassistant.config_entries import ConfigEntryState
 from homeassistant.helpers.device_registry import async_get as async_device_registry_get
 from homeassistant.helpers.device_registry import DeviceRegistry, DeviceEntry
 from homeassistant.helpers.entity_registry import async_get as async_entity_registry_get
@@ -28,6 +30,8 @@ async def test_coordinator_device_name(hass):
     """Test entry setup with new integration name."""
     # Create a mock entry so we don't have to go through config flow
     config_entry = MockConfigEntry(domain=DOMAIN, data=MOCK_CONFIG_ALL, entry_id="test")
+    if MAJOR_VERSION > 2024 or (MAJOR_VERSION == 2024 and MINOR_VERSION >= 7):
+        config_entry.mock_state(hass=hass, state=ConfigEntryState.LOADED)
     config_entry.add_to_hass(hass)
 
     # Set up the entry and assert that the values set during setup are where we expect

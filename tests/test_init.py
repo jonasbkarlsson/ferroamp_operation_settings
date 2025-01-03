@@ -2,6 +2,9 @@
 
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from homeassistant.const import MAJOR_VERSION, MINOR_VERSION
+from homeassistant.config_entries import ConfigEntryState
+
 from custom_components.ferroamp_operation_settings import (
     async_migrate_entry,
     async_reload_entry,
@@ -32,6 +35,8 @@ async def test_setup_unload_and_reload_entry(hass):
     """Test entry setup and unload."""
     # Create a mock entry so we don't have to go through config flow
     config_entry = MockConfigEntry(domain=DOMAIN, data=MOCK_CONFIG_ALL, entry_id="test")
+    if MAJOR_VERSION > 2024 or (MAJOR_VERSION == 2024 and MINOR_VERSION >= 7):
+        config_entry.mock_state(hass=hass, state=ConfigEntryState.LOADED)
     config_entry.add_to_hass(hass)
 
     # Set up the entry and assert that the values set during setup are where we expect
@@ -75,6 +80,8 @@ async def test_setup_with_migration_v1(hass):
     config_entry = MockConfigEntry(
         domain=DOMAIN, data=MOCK_CONFIG_ALL_V1, entry_id="test", version=1
     )
+    if MAJOR_VERSION > 2024 or (MAJOR_VERSION == 2024 and MINOR_VERSION >= 7):
+        config_entry.mock_state(hass=hass, state=ConfigEntryState.LOADED)
     config_entry.add_to_hass(hass)
 
     # Migrate from version 1. Will not be needed.
@@ -120,6 +127,8 @@ async def test_setup_new_integration_name(hass):
     """Test entry setup with new integration name."""
     # Create a mock entry so we don't have to go through config flow
     config_entry = MockConfigEntry(domain=DOMAIN, data=MOCK_CONFIG_ALL, entry_id="test")
+    if MAJOR_VERSION > 2024 or (MAJOR_VERSION == 2024 and MINOR_VERSION >= 7):
+        config_entry.mock_state(hass=hass, state=ConfigEntryState.LOADED)
     config_entry.add_to_hass(hass)
 
     # Set up the entry and assert that the values set during setup are where we expect
@@ -144,7 +153,9 @@ async def test_setup_new_integration_name(hass):
 
     test = hass.data["device_registry"].devices
     device = hass.data["device_registry"].devices[next(iter(test))]
-    assert device.name_by_user == "New title"
+    # The behvior of HA 2024.6 and older (name_by_user is updated)
+    # and HA 2024.7 and newer (name is updated) is different.
+    assert device.name_by_user == "New title" or device.name == "New title"
 
     # Change a changed title
     config_entry.title = "New title2"
@@ -159,7 +170,9 @@ async def test_setup_new_integration_name(hass):
 
     test = hass.data["device_registry"].devices
     device = hass.data["device_registry"].devices[next(iter(test))]
-    assert device.name_by_user == "New title2"
+    # The behvior of HA 2024.6 and older (name_by_user is updated)
+    # and HA 2024.7 and newer (name is updated) is different.
+    assert device.name_by_user == "New title2" or device.name == "New title2"
 
     # Unload the entry and verify that the data has been removed
     assert await async_unload_entry(hass, config_entry)
