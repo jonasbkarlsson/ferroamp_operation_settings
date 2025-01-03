@@ -1,6 +1,9 @@
 """Test ferroamp_operation_settings coordinator."""
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from homeassistant.const import MAJOR_VERSION, MINOR_VERSION
+from homeassistant.config_entries import ConfigEntryState
+
 from custom_components.ferroamp_operation_settings import (
     async_setup_entry,
     async_unload_entry,
@@ -28,6 +31,8 @@ async def test_coordinator(hass):
     config_entry = MockConfigEntry(
         domain=DOMAIN, data=MOCK_CONFIG_ALL, entry_id="test", title="none"
     )
+    if MAJOR_VERSION > 2024 or (MAJOR_VERSION == 2024 and MINOR_VERSION >= 7):
+        config_entry.mock_state(hass=hass, state=ConfigEntryState.LOADED)
     config_entry.add_to_hass(hass)
 
     # Set up the entry and assert that the values set during setup are where we expect

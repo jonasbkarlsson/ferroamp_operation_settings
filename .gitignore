@@ -5,3 +5,7 @@ venv
 .coverage
 .idea
 issues
+
+# Home Assistant configuration
+config/*
+!config/configuration.yaml
