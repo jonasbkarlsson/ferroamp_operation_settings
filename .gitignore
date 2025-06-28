@@ -9,3 +9,5 @@ issues
 # Home Assistant configuration
 config/*
 !config/configuration.yaml
+custom_components/*
+!custom_components/ferroamp_operation_settings
